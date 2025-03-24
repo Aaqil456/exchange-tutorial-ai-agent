@@ -42,32 +42,59 @@ def scrape_article(url):
 
     try:
         title = soup.find("h1").text.strip()
-        content_paragraphs = soup.find_all(['p', 'h2', 'h3'])
-        content = "\n".join(p.get_text(strip=True) for p in content_paragraphs)
+        meta_description = soup.find("meta", {"name": "description"})
+        meta_desc_text = meta_description["content"] if meta_description else ""
+
+        published_date = ""
+        time_tag = soup.find("time")
+        if time_tag and time_tag.get("datetime"):
+            published_date = time_tag.get("datetime")
+
+        content_blocks = []
         images = []
-        for img in soup.find_all('img'):
-            src = img.get('src')
-            if src and src.startswith('http'):
-                images.append(src)
-            elif src and src.startswith('/'):
-                images.append(BASE_URL + src)
-        return {"url": url, "title": title, "content": content, "images": images}
+
+        for element in soup.find_all(['h2', 'h3', 'p', 'img']):
+            if element.name in ['h2', 'h3']:
+                text = element.get_text(strip=True)
+                if text:
+                    content_blocks.append({"type": "heading", "text": text})
+            elif element.name == 'p':
+                text = element.get_text(strip=True)
+                if text:
+                    content_blocks.append({"type": "paragraph", "text": text})
+            elif element.name == 'img':
+                src = element.get('src')
+                if src:
+                    if src.startswith('/'):
+                        src = BASE_URL + src
+                    images.append(src)
+                    content_blocks.append({"type": "image", "url": src})
+
+        return {
+            "url": url,
+            "title": title,
+            "meta_description": meta_desc_text,
+            "published_date": published_date,
+            "content_blocks": content_blocks,
+            "images": images
+        }
+
     except Exception as e:
         print(f"Error scraping {url}: {e}")
         return None
 
-def translate_text(content):
-    if not content or not isinstance(content, str) or not content.strip():
-        return "Translation failed"
+def translate_text_block(block_text):
+    if not block_text.strip():
+        return ""
 
     gemini_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={GOOGLE_API_KEY}"
     headers = {"Content-Type": "application/json"}
     prompt = (
         f"Translate this text into Malay (Bahasa Malaysia). "
-        "Only return the translated text structured like an article. "
-        "Please exclude or remove any sentences that look like advertisements from the text. "
+        "Only return the translated text, structured exactly like an article sentence. "
+        "Exclude advertisements or promotional lines. "
         "Here is the text:\n\n"
-        f"{content}"
+        f"{block_text}"
     )
 
     payload = {
@@ -80,26 +107,41 @@ def translate_text(content):
             if response.status_code == 200:
                 data = response.json()
                 translated = data.get("candidates", [{}])[0].get("content", {}).get("parts", [{}])[0].get("text", "")
-                return translated.strip() if translated else "Translation failed"
+                return translated.strip() if translated else ""
             elif response.status_code == 429:
                 print(f"[Rate Limit] Retrying in {2 ** attempt} seconds...")
                 time.sleep(2 ** attempt)
             else:
                 print(f"[Gemini Error] {response.status_code}: {response.text}")
-                return "Translation failed"
+                return ""
         except Exception as e:
             print(f"[Gemini Exception] {e}")
-            return "Translation failed"
-    return "Translation failed"
+            return ""
+    return ""
+
+def translate_article_blocks(content_blocks):
+    translated_blocks = []
+    for block in content_blocks:
+        if block["type"] in ["heading", "paragraph"]:
+            translated_text = translate_text_block(block["text"])
+            translated_blocks.append({
+                "type": block["type"],
+                "original_text": block["text"],
+                "translated_text": translated_text
+            })
+        elif block["type"] == "image":
+            translated_blocks.append(block)
+        time.sleep(1)  # Be gentle with the API
+    return translated_blocks
 
 def save_articles(articles):
-    filename = "mexc_translated_articles.json"  # Always overwrite the same file
+    filename = "mexc_translated_articles.json"
     with open(filename, 'w', encoding='utf-8') as f:
         json.dump({
             "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             "articles": articles
         }, f, ensure_ascii=False, indent=4)
-    print(f"✅ Saved {len(articles)} articles to {filename}")
+    print(f"✅ Saved {len(articles)} structured articles to {filename}")
 
 def main():
     if not GOOGLE_API_KEY:
@@ -112,20 +154,10 @@ def main():
         print(f"\n🔎 Scraping: {link}")
         article = scrape_article(link)
         if article:
-            max_retries = 3
-            for attempt in range(max_retries):
-                translated_content = translate_text(article['content'])
-                if translated_content != "Translation failed":
-                    break
-                print(f"[Retry {attempt + 1}] Translation failed for: {article['title']}")
-                time.sleep(2)
-            else:
-                print(f"[SKIP] Failed to translate after {max_retries} attempts: {article['title']}")
-                continue
-
-            article['translated_content'] = translated_content
+            print(f"🔎 Translating blocks for article: {article['title']}")
+            translated_blocks = translate_article_blocks(article["content_blocks"])
+            article["translated_blocks"] = translated_blocks
             articles_data.append(article)
-            time.sleep(2)
     save_articles(articles_data)
 
 if __name__ == "__main__":
