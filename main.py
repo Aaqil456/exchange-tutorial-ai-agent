@@ -48,8 +48,8 @@ def scrape_article(url):
         breadcrumb_items = soup.select(".breadcrumb a")
         breadcrumbs = " / ".join([crumb.get_text(strip=True) for crumb in breadcrumb_items])
 
-        # ✅ Full structured article scraping
-        content_elements = soup.find_all(['h2', 'h3', 'p', 'ul', 'blockquote', 'pre'])
+        # ✅ Full structured scraping, including span
+        content_elements = soup.find_all(['h2', 'h3', 'p', 'ul', 'blockquote', 'pre', 'span'])
         content = ""
         for elem in content_elements:
             if elem.name in ['h2', 'h3']:
@@ -64,8 +64,13 @@ def scrape_article(url):
                 content += f"\n> {elem.get_text(strip=True)}\n\n"
             elif elem.name == 'pre':
                 content += f"\n[Code Block]\n{elem.get_text(strip=True)}\n\n"
+            elif elem.name == 'span':
+                span_text = elem.get_text(strip=True)
+                # Only add span text if meaningful and not already included
+                if span_text and span_text not in content:
+                    content += span_text + "\n\n"
 
-        # ✅ Related articles scraping (if section exists)
+        # ✅ Related articles
         related_articles = []
         related_section = soup.find("div", class_="related-articles") or soup.find("aside")
         if related_section:
@@ -75,7 +80,7 @@ def scrape_article(url):
                 if rel_title and rel_url:
                     related_articles.append({"title": rel_title, "url": rel_url})
 
-        # ✅ Image collection
+        # ✅ Images
         images = []
         for img in soup.find_all('img'):
             src = img.get('src')
@@ -134,7 +139,7 @@ def translate_text(content):
     return "Translation failed"
 
 def save_articles(articles):
-    filename = "mexc_translated_articles.json"  # Always overwrite the same file
+    filename = "mexc_translated_articles.json"  # Always overwrite
     with open(filename, 'w', encoding='utf-8') as f:
         json.dump({
             "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
