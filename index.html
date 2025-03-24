@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>MEXC Translated Articles Showcase</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+    h1 { text-align: center; }
+    .article { background: #fff; padding: 20px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 0 5px rgba(0,0,0,0.1); }
+    .article img { max-width: 100%; margin: 10px 0; }
+    .timestamp { text-align: center; margin-bottom: 30px; font-size: 0.9em; color: gray; }
+  </style>
+</head>
+<body>
+  <h1>MEXC Translated Articles</h1>
+  <div class="timestamp" id="lastUpdated"></div>
+  <div id="articlesContainer"></div>
+
+  <script>
+    fetch('mexc_translated_articles.json')
+      .then(response => response.json())
+      .then(data => {
+        document.getElementById('lastUpdated').innerText = `Last Updated: ${data.timestamp}`;
+        const container = document.getElementById('articlesContainer');
+
+        data.articles.forEach(article => {
+          const articleDiv = document.createElement('div');
+          articleDiv.classList.add('article');
+
+          let imgHtml = '';
+          if (article.images.length > 0) {
+            imgHtml = `<img src="${article.images[0]}" alt="Article Image">`;
+          }
+
+          articleDiv.innerHTML = `
+            <h2>${article.title}</h2>
+            ${imgHtml}
+            <p>${article.translated_content.replace(/\n/g, '<br>')}</p>
+            <p><a href="${article.url}" target="_blank">Read Original Article</a></p>
+          `;
+          container.appendChild(articleDiv);
+        });
+      })
+      .catch(error => {
+        document.getElementById('articlesContainer').innerText = "Error loading articles.";
+        console.error(error);
+      });
+  </script>
+</body>
+</html>
