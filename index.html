@@ -4,11 +4,48 @@
   <meta charset="UTF-8">
   <title>MEXC Translated Articles Showcase</title>
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; background: #000; }
-    h1 { text-align: center; }
-    .article { background: #000; padding: 20px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 0 5px rgba(0,0,0,0.1); }
-    .article img { max-width: 100%; margin: 10px 0; }
-    .timestamp { text-align: center; margin-bottom: 30px; font-size: 0.9em; color: gray; }
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #121212;
+      color: #f0f0f0;
+    }
+    h1 {
+      text-align: center;
+      color: #00ffae;
+    }
+    .timestamp {
+      text-align: center;
+      margin-bottom: 30px;
+      font-size: 0.9em;
+      color: #aaaaaa;
+    }
+    .article {
+      background: #1e1e1e;
+      padding: 20px;
+      margin-bottom: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,255,174,0.1);
+      transition: transform 0.2s;
+    }
+    .article:hover {
+      transform: scale(1.02);
+    }
+    .article h2 {
+      color: #00ffae;
+    }
+    .article img {
+      max-width: 100%;
+      margin: 10px 0;
+      border-radius: 6px;
+    }
+    a {
+      color: #4ecdc4;
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
   </style>
 </head>
 <body>
@@ -36,7 +73,7 @@
             <h2>${article.title}</h2>
             ${imgHtml}
             <p>${article.translated_content.replace(/\n/g, '<br>')}</p>
-            <p><a href="${article.url}" target="_blank">Read Original Article</a></p>
+            <p><a href="${article.url}" target="_blank">Read Original Article ➡️</a></p>
           `;
           container.appendChild(articleDiv);
         });
