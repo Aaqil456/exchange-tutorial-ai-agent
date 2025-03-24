@@ -6,7 +6,6 @@ import json
 import time
 from datetime import datetime
 
-# Load environment variables from GitHub Actions or system environment
 GOOGLE_API_KEY = os.environ.get("GEMINI_API_KEY")
 BASE_URL = "https://www.mexc.co"
 
@@ -84,9 +83,12 @@ def translate_text(content):
     return "Translation failed"
 
 def save_articles(articles):
-    filename = f"mexc_articles_{datetime.now().strftime('%Y%m%d_%H%M')}.json"
+    filename = "mexc_translated_articles.json"  # Always overwrite the same file
     with open(filename, 'w', encoding='utf-8') as f:
-        json.dump(articles, f, ensure_ascii=False, indent=4)
+        json.dump({
+            "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "articles": articles
+        }, f, ensure_ascii=False, indent=4)
     print(f"✅ Saved {len(articles)} articles to {filename}")
 
 def main():
