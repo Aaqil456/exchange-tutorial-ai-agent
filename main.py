@@ -11,7 +11,12 @@ BASE_URL = "https://www.mexc.co"
 
 def get_article_links():
     print("Getting article links...")
-    driver = uc.Chrome()
+    options = uc.ChromeOptions()
+    options.add_argument('--headless')
+    options.add_argument('--no-sandbox')
+    options.add_argument('--disable-dev-shm-usage')
+    driver = uc.Chrome(options=options)
+
     driver.get(f"{BASE_URL}/learn/trading-guide")
     soup = BeautifulSoup(driver.page_source, "html.parser")
     driver.quit()
@@ -25,7 +30,12 @@ def get_article_links():
     return links
 
 def scrape_article(url):
-    driver = uc.Chrome()
+    options = uc.ChromeOptions()
+    options.add_argument('--headless')
+    options.add_argument('--no-sandbox')
+    options.add_argument('--disable-dev-shm-usage')
+    driver = uc.Chrome(options=options)
+
     driver.get(url)
     soup = BeautifulSoup(driver.page_source, "html.parser")
     driver.quit()
