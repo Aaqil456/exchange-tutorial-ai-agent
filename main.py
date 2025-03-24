@@ -44,13 +44,11 @@ def scrape_article(url):
     try:
         title = soup.find("h1").text.strip()
 
-        # ✅ Detailed scraping explanation:
-        # We'll collect:
-        # - Headings (h2, h3)
-        # - Paragraphs (p)
-        # - Lists (ul > li) as bullet points
-        # - Blockquotes
-        # - Pre (code blocks)
+        # ✅ Breadcrumb scraping
+        breadcrumb_items = soup.select(".breadcrumb a")
+        breadcrumbs = " / ".join([crumb.get_text(strip=True) for crumb in breadcrumb_items])
+
+        # ✅ Full structured article scraping
         content_elements = soup.find_all(['h2', 'h3', 'p', 'ul', 'blockquote', 'pre'])
         content = ""
         for elem in content_elements:
@@ -67,7 +65,17 @@ def scrape_article(url):
             elif elem.name == 'pre':
                 content += f"\n[Code Block]\n{elem.get_text(strip=True)}\n\n"
 
-        # ✅ Collect all images (absolute and relative)
+        # ✅ Related articles scraping (if section exists)
+        related_articles = []
+        related_section = soup.find("div", class_="related-articles") or soup.find("aside")
+        if related_section:
+            for rel in related_section.select("a"):
+                rel_title = rel.get_text(strip=True)
+                rel_url = rel['href'] if rel['href'].startswith("http") else BASE_URL + rel['href']
+                if rel_title and rel_url:
+                    related_articles.append({"title": rel_title, "url": rel_url})
+
+        # ✅ Image collection
         images = []
         for img in soup.find_all('img'):
             src = img.get('src')
@@ -76,7 +84,15 @@ def scrape_article(url):
             elif src and src.startswith('/'):
                 images.append(BASE_URL + src)
 
-        return {"url": url, "title": title, "content": content.strip(), "images": images}
+        return {
+            "url": url,
+            "title": title,
+            "breadcrumbs": breadcrumbs,
+            "content": content.strip(),
+            "images": images,
+            "related_articles": related_articles
+        }
+
     except Exception as e:
         print(f"Error scraping {url}: {e}")
         return None
