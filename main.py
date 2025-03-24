@@ -30,6 +30,7 @@ def get_article_links():
     return links
 
 def scrape_article(url):
+    print(f"Scraping article: {url}")
     options = uc.ChromeOptions()
     options.add_argument('--headless')
     options.add_argument('--no-sandbox')
@@ -42,8 +43,31 @@ def scrape_article(url):
 
     try:
         title = soup.find("h1").text.strip()
-        content_paragraphs = soup.find_all(['p', 'h2', 'h3'])
-        content = "\n".join(p.get_text(strip=True) for p in content_paragraphs)
+
+        # ✅ Detailed scraping explanation:
+        # We'll collect:
+        # - Headings (h2, h3)
+        # - Paragraphs (p)
+        # - Lists (ul > li) as bullet points
+        # - Blockquotes
+        # - Pre (code blocks)
+        content_elements = soup.find_all(['h2', 'h3', 'p', 'ul', 'blockquote', 'pre'])
+        content = ""
+        for elem in content_elements:
+            if elem.name in ['h2', 'h3']:
+                content += f"\n\n## {elem.get_text(strip=True)}\n"
+            elif elem.name == 'p':
+                content += elem.get_text(strip=True) + "\n\n"
+            elif elem.name == 'ul':
+                for li in elem.find_all('li'):
+                    content += f"• {li.get_text(strip=True)}\n"
+                content += "\n"
+            elif elem.name == 'blockquote':
+                content += f"\n> {elem.get_text(strip=True)}\n\n"
+            elif elem.name == 'pre':
+                content += f"\n[Code Block]\n{elem.get_text(strip=True)}\n\n"
+
+        # ✅ Collect all images (absolute and relative)
         images = []
         for img in soup.find_all('img'):
             src = img.get('src')
@@ -51,7 +75,8 @@ def scrape_article(url):
                 images.append(src)
             elif src and src.startswith('/'):
                 images.append(BASE_URL + src)
-        return {"url": url, "title": title, "content": content, "images": images}
+
+        return {"url": url, "title": title, "content": content.strip(), "images": images}
     except Exception as e:
         print(f"Error scraping {url}: {e}")
         return None
