@@ -2,14 +2,13 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>MEXC Tutorials Showcase</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MEXC Translated Articles Showcase</title>
   <style>
     body {
-      background-color: #121212;
-      color: #f0f0f0;
       font-family: Arial, sans-serif;
       padding: 20px;
+      background: #121212;
+      color: #f0f0f0;
     }
     h1 {
       text-align: center;
@@ -21,29 +20,28 @@
       font-size: 0.9em;
       color: #aaaaaa;
     }
-    .article-container {
+    .article {
       background: #1e1e1e;
       padding: 20px;
-      margin-bottom: 50px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0, 255, 174, 0.1);
+      margin-bottom: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,255,174,0.1);
+      transition: transform 0.2s;
     }
-    .article-container img {
-      max-width: 100%;
-      border-radius: 6px;
-      margin: 10px 0;
+    .article:hover {
+      transform: scale(1.02);
     }
-    .breadcrumbs {
-      font-size: 0.9em;
-      color: #888;
-      margin-bottom: 10px;
-    }
-    .article-container h2 {
+    .article h2 {
       color: #00ffae;
-      margin-top: 0;
+    }
+    .article img {
+      max-width: 100%;
+      margin: 10px 0;
+      border-radius: 6px;
     }
     a {
       color: #4ecdc4;
+      text-decoration: none;
     }
     a:hover {
       text-decoration: underline;
@@ -51,33 +49,38 @@
   </style>
 </head>
 <body>
-  <h1>MEXC Full Tutorials (Original Layout)</h1>
+  <h1>MEXC Translated Articles</h1>
   <div class="timestamp" id="lastUpdated"></div>
-  <div id="articles"></div>
+  <div id="articlesContainer"></div>
 
   <script>
-    fetch('mexc_full_html_articles.json')
+    fetch('mexc_translated_articles.json')
       .then(response => response.json())
       .then(data => {
         document.getElementById('lastUpdated').innerText = `Last Updated: ${data.timestamp}`;
-        const container = document.getElementById('articles');
+        const container = document.getElementById('articlesContainer');
 
         data.articles.forEach(article => {
-          const div = document.createElement('div');
-          div.classList.add('article-container');
+          const articleDiv = document.createElement('div');
+          articleDiv.classList.add('article');
 
-          div.innerHTML = `
+          let imgHtml = '';
+          if (article.images.length > 0) {
+            imgHtml = `<img src="${article.images[0]}" alt="Article Image">`;
+          }
+
+          articleDiv.innerHTML = `
             <h2>${article.title}</h2>
-            <div class="breadcrumbs">${article.breadcrumbs}</div>
-            ${article.content_html}
-            <p><a href="${article.url}" target="_blank">View Original Article ➡️</a></p>
+            ${imgHtml}
+            <p>${article.translated_content.replace(/\n/g, '<br>')}</p>
+            <p><a href="${article.url}" target="_blank">Read Original Article ➡️</a></p>
           `;
-          container.appendChild(div);
+          container.appendChild(articleDiv);
         });
       })
-      .catch(err => {
-        document.getElementById('articles').innerHTML = "<p>Error loading articles.</p>";
-        console.error(err);
+      .catch(error => {
+        document.getElementById('articlesContainer').innerText = "Error loading articles.";
+        console.error(error);
       });
   </script>
 </body>
