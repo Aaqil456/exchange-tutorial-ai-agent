@@ -109,12 +109,15 @@ def translate_text(content):
     gemini_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={GOOGLE_API_KEY}"
     headers = {"Content-Type": "application/json"}
     prompt = (
-        f"Translate this text into Malay (Bahasa Malaysia). "
-        "Only return the translated text structured like an article. "
-        "Please exclude or remove any sentences that look like advertisements from the text. "
-        "Here is the text:\n\n"
-        f"{content}"
-    )
+    "You will be given article content scraped from a crypto trading tutorial. "
+    "Translate this entire text into Malay (Bahasa Malaysia) and reformat it into a clean, structured tutorial style. "
+    "Maintain and enhance the structure with clear headings, bullet points, code blocks, and quotes where applicable. "
+    "Ensure the content flows step by step like a professional tutorial. "
+    "Do not add your own explanations, do not include advertisements or promotional sentences. "
+    "Only provide the clean, translated tutorial with proper formatting, headings, and sections:\n\n"
+    f"{content}"
+)
+
 
     payload = {
         "contents": [{"parts": [{"text": prompt}]}]
