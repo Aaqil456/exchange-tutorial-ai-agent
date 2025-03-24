@@ -30,7 +30,7 @@ def get_article_links():
     return links
 
 def scrape_article(url):
-    print(f"Scraping full HTML from #__next: {url}")
+    print(f"Scraping article: {url}")
     options = uc.ChromeOptions()
     options.add_argument('--headless')
     options.add_argument('--no-sandbox')
@@ -42,21 +42,35 @@ def scrape_article(url):
     driver.quit()
 
     try:
-        title = soup.find("h1").text.strip() if soup.find("h1") else "No Title Found"
+        title = soup.find("h1").text.strip()
 
-        # Breadcrumbs (if available)
+        # ✅ Breadcrumb scraping
         breadcrumb_items = soup.select(".breadcrumb a")
         breadcrumbs = " / ".join([crumb.get_text(strip=True) for crumb in breadcrumb_items])
 
-        # ✅ Extract full HTML from the div with id="__next"
-        content_div = soup.find("div", id="__next")
-        if content_div:
-            raw_html = str(content_div)
-            raw_html = raw_html.replace('src="/', f'src="{BASE_URL}/')  # fix relative URLs
-        else:
-            raw_html = ""
+        # ✅ Full structured scraping, including span
+        content_elements = soup.find_all(['h2', 'h3', 'p', 'ul', 'blockquote', 'pre', 'span'])
+        content = ""
+        for elem in content_elements:
+            if elem.name in ['h2', 'h3']:
+                content += f"\n\n## {elem.get_text(strip=True)}\n"
+            elif elem.name == 'p':
+                content += elem.get_text(strip=True) + "\n\n"
+            elif elem.name == 'ul':
+                for li in elem.find_all('li'):
+                    content += f"• {li.get_text(strip=True)}\n"
+                content += "\n"
+            elif elem.name == 'blockquote':
+                content += f"\n> {elem.get_text(strip=True)}\n\n"
+            elif elem.name == 'pre':
+                content += f"\n[Code Block]\n{elem.get_text(strip=True)}\n\n"
+            elif elem.name == 'span':
+                span_text = elem.get_text(strip=True)
+                # Only add span text if meaningful and not already included
+                if span_text and span_text not in content:
+                    content += span_text + "\n\n"
 
-        # ✅ Related articles if available
+        # ✅ Related articles
         related_articles = []
         related_section = soup.find("div", class_="related-articles") or soup.find("aside")
         if related_section:
@@ -66,11 +80,21 @@ def scrape_article(url):
                 if rel_title and rel_url:
                     related_articles.append({"title": rel_title, "url": rel_url})
 
+        # ✅ Images
+        images = []
+        for img in soup.find_all('img'):
+            src = img.get('src')
+            if src and src.startswith('http'):
+                images.append(src)
+            elif src and src.startswith('/'):
+                images.append(BASE_URL + src)
+
         return {
             "url": url,
             "title": title,
             "breadcrumbs": breadcrumbs,
-            "content_html": raw_html.strip(),
+            "content": content.strip(),
+            "images": images,
             "related_articles": related_articles
         }
 
@@ -78,8 +102,44 @@ def scrape_article(url):
         print(f"Error scraping {url}: {e}")
         return None
 
+def translate_text(content):
+    if not content or not isinstance(content, str) or not content.strip():
+        return "Translation failed"
+
+    gemini_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={GOOGLE_API_KEY}"
+    headers = {"Content-Type": "application/json"}
+    prompt = (
+        f"Translate this text into Malay (Bahasa Malaysia). "
+        "Only return the translated text structured like an article. "
+        "Please exclude or remove any sentences that look like advertisements from the text. "
+        "Here is the text:\n\n"
+        f"{content}"
+    )
+
+    payload = {
+        "contents": [{"parts": [{"text": prompt}]}]
+    }
+
+    for attempt in range(5):
+        try:
+            response = requests.post(gemini_url, headers=headers, json=payload)
+            if response.status_code == 200:
+                data = response.json()
+                translated = data.get("candidates", [{}])[0].get("content", {}).get("parts", [{}])[0].get("text", "")
+                return translated.strip() if translated else "Translation failed"
+            elif response.status_code == 429:
+                print(f"[Rate Limit] Retrying in {2 ** attempt} seconds...")
+                time.sleep(2 ** attempt)
+            else:
+                print(f"[Gemini Error] {response.status_code}: {response.text}")
+                return "Translation failed"
+        except Exception as e:
+            print(f"[Gemini Exception] {e}")
+            return "Translation failed"
+    return "Translation failed"
+
 def save_articles(articles):
-    filename = "mexc_full_html_articles.json"  # Save output here
+    filename = "mexc_translated_articles.json"  # Always overwrite
     with open(filename, 'w', encoding='utf-8') as f:
         json.dump({
             "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -88,11 +148,28 @@ def save_articles(articles):
     print(f"✅ Saved {len(articles)} articles to {filename}")
 
 def main():
+    if not GOOGLE_API_KEY:
+        print("[ERROR] GEMINI_API_KEY is not set!")
+        return
+
     articles_data = []
     links = get_article_links()
     for link in links:
+        print(f"\n🔎 Scraping: {link}")
         article = scrape_article(link)
         if article:
+            max_retries = 3
+            for attempt in range(max_retries):
+                translated_content = translate_text(article['content'])
+                if translated_content != "Translation failed":
+                    break
+                print(f"[Retry {attempt + 1}] Translation failed for: {article['title']}")
+                time.sleep(2)
+            else:
+                print(f"[SKIP] Failed to translate after {max_retries} attempts: {article['title']}")
+                continue
+
+            article['translated_content'] = translated_content
             articles_data.append(article)
             time.sleep(2)
     save_articles(articles_data)
