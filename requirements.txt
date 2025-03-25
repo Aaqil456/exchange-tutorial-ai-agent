@@ -1,6 +1,5 @@
+crewai
 requests
-beautifulsoup4
-selenium
 undetected-chromedriver
-python-dotenv
+beautifulsoup4
 google-generativeai
