@@ -7,32 +7,48 @@ from agents.validator_agent import ValidatorAgent
 from agents.saver_agent import SaverAgent
 
 def main():
-    # Step 1: Scrape
-    scraper = ScraperAgent()
+    scraper = ScraperAgent(
+        role="Web Scraper",
+        goal="Scrape tutorials with all content and images intact.",
+        backstory="You are responsible for getting clean and complete tutorial content from the MEXC trading guide page."
+    )
+    cleaner = CleanerAgent(
+        role="Content Cleaner",
+        goal="Filter and clean the scraped articles, removing anything irrelevant.",
+        backstory="You ensure only high-quality tutorial articles proceed to translation."
+    )
+    image_validator = ImageValidator(
+        role="Image Validator",
+        goal="Check that each article includes embedded images in the correct positions.",
+        backstory="You double-check every piece of content to ensure images are in place."
+    )
+    translator = TranslatorAgent(
+        role="Translator",
+        goal="Translate text content to Malay without altering structure or images.",
+        backstory="You are a careful translator that preserves structure and converts only text."
+    )
+    formatter = FormatterAgent(
+        role="Formatter",
+        goal="Format the translated content into a professional tutorial layout.",
+        backstory="You ensure everything looks beautiful, with clear headings, images, and structure."
+    )
+    validator = ValidatorAgent(
+        role="Output Validator",
+        goal="Perform final validation to ensure quality and correctness.",
+        backstory="You are the final checkpoint for quality assurance."
+    )
+    saver = SaverAgent(
+        role="Saver",
+        goal="Save validated articles into a JSON file.",
+        backstory="You safely store the final tutorial collection for publishing."
+    )
+
     articles = scraper.run()
-
-    # Step 2: Clean
-    cleaner = CleanerAgent()
     cleaned_articles = cleaner.run(articles)
-
-    # Step 3: Validate Images
-    validator_img = ImageValidator()
-    validated_articles = validator_img.run(cleaned_articles)
-
-    # Step 4: Translate
-    translator = TranslatorAgent()
+    validated_articles = image_validator.run(cleaned_articles)
     translated_articles = translator.run(validated_articles)
-
-    # Step 5: Format
-    formatter = FormatterAgent()
     formatted_articles = formatter.run(translated_articles)
-
-    # Step 6: Final Validation
-    final_validator = ValidatorAgent()
-    final_validated = final_validator.run(formatted_articles)
-
-    # Step 7: Save
-    saver = SaverAgent()
+    final_validated = validator.run(formatted_articles)
     saver.run(final_validated)
 
 if __name__ == "__main__":
