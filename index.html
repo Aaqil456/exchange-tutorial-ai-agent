@@ -2,42 +2,17 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>MEXC Translated Articles Showcase</title>
+  <title>MEXC Translated Tutorials</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
+      background-color: #121212;
+      color: #e0e0e0;
+      font-family: 'Arial', sans-serif;
+      margin: 0;
       padding: 20px;
-      background: #121212;
-      color: #f0f0f0;
     }
-    h1 {
-      text-align: center;
+    h1, h2, h3 {
       color: #00ffae;
-    }
-    .timestamp {
-      text-align: center;
-      margin-bottom: 30px;
-      font-size: 0.9em;
-      color: #aaaaaa;
-    }
-    .article {
-      background: #1e1e1e;
-      padding: 20px;
-      margin-bottom: 20px;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0,255,174,0.1);
-      transition: transform 0.2s;
-    }
-    .article:hover {
-      transform: scale(1.02);
-    }
-    .article h2 {
-      color: #00ffae;
-    }
-    .article img {
-      max-width: 100%;
-      margin: 10px 0;
-      border-radius: 6px;
     }
     a {
       color: #4ecdc4;
@@ -46,42 +21,96 @@
     a:hover {
       text-decoration: underline;
     }
+    .article-card {
+      background-color: #1e1e1e;
+      margin-bottom: 40px;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0, 255, 174, 0.05);
+    }
+    img {
+      max-width: 100%;
+      border-radius: 8px;
+      margin: 15px 0;
+    }
+    blockquote {
+      border-left: 4px solid #00ffae;
+      margin: 15px 0;
+      padding-left: 15px;
+      color: #bbbbbb;
+      font-style: italic;
+    }
+    pre {
+      background-color: #2b2b2b;
+      padding: 10px;
+      border-radius: 8px;
+      overflow-x: auto;
+      color: #ffffff;
+      margin: 15px 0;
+    }
+    ul {
+      padding-left: 20px;
+    }
+    .breadcrumbs {
+      font-size: 0.9em;
+      color: #888888;
+      margin-bottom: 10px;
+    }
+    .related-articles {
+      margin-top: 20px;
+      background-color: #2a2a2a;
+      padding: 10px;
+      border-radius: 8px;
+    }
+    .related-articles h4 {
+      color: #4ecdc4;
+    }
   </style>
 </head>
 <body>
-  <h1>MEXC Translated Articles</h1>
-  <div class="timestamp" id="lastUpdated"></div>
+  <h1>MEXC Translated Tutorials (Live Showcase)</h1>
+  <p id="lastUpdated" style="text-align:center; color:gray; margin-bottom:40px;"></p>
   <div id="articlesContainer"></div>
 
   <script>
-    fetch('mexc_translated_articles.json')
-      .then(response => response.json())
-      .then(data => {
+    async function loadArticles() {
+      try {
+        const response = await fetch('mexc_translated_articles.json');
+        const data = await response.json();
         document.getElementById('lastUpdated').innerText = `Last Updated: ${data.timestamp}`;
         const container = document.getElementById('articlesContainer');
 
         data.articles.forEach(article => {
-          const articleDiv = document.createElement('div');
-          articleDiv.classList.add('article');
+          const card = document.createElement('div');
+          card.classList.add('article-card');
 
-          let imgHtml = '';
-          if (article.images.length > 0) {
-            imgHtml = `<img src="${article.images[0]}" alt="Article Image">`;
-          }
+          let contentHtml = article.translated_tutorial
+            .replace(/\n## (.*?)\n/g, '<h2>$1</h2>')
+            .replace(/\n/g, '<br>')  // convert remaining line breaks
+            .replace(/\[Code Block\](.*?)<br>/gs, '<pre>$1</pre>');
 
-          articleDiv.innerHTML = `
+          card.innerHTML = `
             <h2>${article.title}</h2>
-            ${imgHtml}
-            <p>${article.translated_content.replace(/\n/g, '<br>')}</p>
-            <p><a href="${article.url}" target="_blank">Read Original Article ➡️</a></p>
+            <div class="breadcrumbs">${article.breadcrumbs}</div>
+            <div>${contentHtml}</div>
+            ${article.related_articles.length > 0 ? `
+            <div class="related-articles">
+              <h4>Related Articles:</h4>
+              <ul>
+                ${article.related_articles.map(r => `<li><a href="${r.url}" target="_blank">${r.title}</a></li>`).join('')}
+              </ul>
+            </div>` : ''}
           `;
-          container.appendChild(articleDiv);
+          container.appendChild(card);
         });
-      })
-      .catch(error => {
-        document.getElementById('articlesContainer').innerText = "Error loading articles.";
+
+      } catch (error) {
+        document.getElementById('articlesContainer').innerText = "Failed to load data.";
         console.error(error);
-      });
+      }
+    }
+
+    loadArticles();
   </script>
 </body>
 </html>
