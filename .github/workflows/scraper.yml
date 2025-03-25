@@ -1,9 +1,9 @@
 name: MEXC Scraper, Translate & Push JSON
 
 on:
-  workflow_dispatch:
-  #schedule:
-    #- cron: '0 * * * *'   # Runs every hour
+  workflow_dispatch:   # Manual trigger from GitHub Actions tab
+  # schedule:
+  #   - cron: '0 * * * *'  # Uncomment if you want it to run hourly
 
 permissions:
   contents: write
@@ -23,7 +23,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install requests beautifulsoup4 selenium undetected-chromedriver
+          pip install requests beautifulsoup4 selenium undetected-chromedriver crewai google-generativeai
 
       - name: Verify Secrets
         env:
@@ -33,8 +33,12 @@ jobs:
             echo "❌ GEMINI_API_KEY secret is missing!"
             exit 1
           fi
+          if [ -z "${{ secrets.ACTIONS_PAT }}" ]; then
+            echo "❌ ACTIONS_PAT secret is missing!"
+            exit 1
+          fi
 
-      - name: Run MEXC scraping and translation
+      - name: Run MEXC scraping and translation via CrewAI
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: python main.py
