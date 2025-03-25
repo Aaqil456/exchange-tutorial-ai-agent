@@ -2,14 +2,14 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>MEXC Translated Tutorials</title>
+  <title>MEXC Translated Tutorials Showcase</title>
   <style>
     body {
       background-color: #121212;
       color: #e0e0e0;
-      font-family: 'Arial', sans-serif;
-      padding: 20px;
+      font-family: Arial, sans-serif;
       margin: 0;
+      padding: 20px;
     }
     h1, h2, h3 {
       color: #00ffae;
@@ -22,11 +22,11 @@
       text-decoration: underline;
     }
     .article-card {
-      background-color: #1c1c1c;
-      margin-bottom: 40px;
+      background-color: #1e1e1e;
+      margin-bottom: 50px;
       padding: 20px;
       border-radius: 12px;
-      box-shadow: 0 0 8px rgba(0, 255, 174, 0.05);
+      box-shadow: 0 0 10px rgba(0, 255, 174, 0.05);
     }
     img {
       max-width: 100%;
@@ -36,8 +36,8 @@
     blockquote {
       border-left: 4px solid #00ffae;
       margin: 20px 0;
-      padding-left: 16px;
-      color: #aaaaaa;
+      padding-left: 15px;
+      color: #bbbbbb;
       font-style: italic;
     }
     pre {
@@ -49,27 +49,18 @@
       margin: 20px 0;
     }
     ul {
-      padding-left: 24px;
+      padding-left: 25px;
     }
-    .breadcrumbs {
-      font-size: 0.9em;
-      color: #888888;
-      margin-bottom: 10px;
-    }
-    .related-articles {
-      background-color: #2a2a2a;
-      padding: 12px;
-      border-radius: 8px;
-      margin-top: 25px;
-    }
-    .related-articles h4 {
-      color: #4ecdc4;
+    .timestamp {
+      text-align: center;
+      color: #888;
+      margin-bottom: 40px;
     }
   </style>
 </head>
 <body>
   <h1>MEXC Translated Tutorials</h1>
-  <p id="lastUpdated" style="text-align:center; color:gray; margin-bottom:40px;"></p>
+  <p class="timestamp" id="lastUpdated"></p>
   <div id="articlesContainer"></div>
 
   <script>
@@ -78,41 +69,24 @@
         const response = await fetch('mexc_translated_articles.json');
         const data = await response.json();
         document.getElementById('lastUpdated').innerText = `Last Updated: ${data.timestamp}`;
+
         const container = document.getElementById('articlesContainer');
 
         data.articles.forEach(article => {
           const card = document.createElement('div');
           card.classList.add('article-card');
 
-          // Render translated_content with simple conversions
-          let tutorialContent = article.translated_content
-            .replace(/\n## (.*?)\n/g, '<h2>$1</h2>') // Convert headings
-            .replace(/\n> (.*?)\n/g, '<blockquote>$1</blockquote>') // Quotes
-            .replace(/\n• (.*?)\n/g, '<li>$1</li>') // Bullet points
-            .replace(/\n/g, '<br>') // Remaining line breaks
-            .replace(/\[Code Block\](.*?)<br>/gs, '<pre>$1</pre>'); // Code blocks
-
-          // Wrap any <li> found inside <ul>
-          tutorialContent = tutorialContent.replace(/(<li>.*?<\/li>)/gs, '<ul>$1</ul>');
-
           card.innerHTML = `
             <h2>${article.title}</h2>
-            <div class="breadcrumbs">${article.breadcrumbs}</div>
-            <div>${tutorialContent}</div>
-            ${article.related_articles.length > 0 ? `
-              <div class="related-articles">
-                <h4>Related Articles:</h4>
-                <ul>
-                  ${article.related_articles.map(r => `<li><a href="${r.url}" target="_blank">${r.title}</a></li>`).join('')}
-                </ul>
-              </div>` : ''}
+            <div>${article.final_html}</div>
           `;
+
           container.appendChild(card);
         });
 
       } catch (error) {
-        document.getElementById('articlesContainer').innerText = "Failed to load articles.";
-        console.error(error);
+        console.error('Error loading articles:', error);
+        document.getElementById('articlesContainer').innerText = "Failed to load translated articles.";
       }
     }
 
