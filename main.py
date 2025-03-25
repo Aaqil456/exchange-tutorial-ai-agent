@@ -48,36 +48,29 @@ def scrape_article(url):
         breadcrumb_items = soup.select(".breadcrumb a")
         breadcrumbs = " / ".join([crumb.get_text(strip=True) for crumb in breadcrumb_items])
 
-        # ✅ Build structured content with [IMAGE: url] placeholders
-        content_elements = soup.find_all(['h2', 'h3', 'p', 'ul', 'blockquote', 'pre', 'span', 'img'])
-        content_blocks = []
+        # ✅ Full structured scraping, including span
+        content_elements = soup.find_all(['h2', 'h3', 'p', 'ul', 'blockquote', 'pre', 'span'])
+        content = ""
         for elem in content_elements:
             if elem.name in ['h2', 'h3']:
-                content_blocks.append(f"\n\n## {elem.get_text(strip=True)}\n")
+                content += f"\n\n## {elem.get_text(strip=True)}\n"
             elif elem.name == 'p':
-                content_blocks.append(elem.get_text(strip=True) + "\n\n")
+                content += elem.get_text(strip=True) + "\n\n"
             elif elem.name == 'ul':
                 for li in elem.find_all('li'):
-                    content_blocks.append(f"• {li.get_text(strip=True)}\n")
-                content_blocks.append("\n")
+                    content += f"• {li.get_text(strip=True)}\n"
+                content += "\n"
             elif elem.name == 'blockquote':
-                content_blocks.append(f"\n> {elem.get_text(strip=True)}\n\n")
+                content += f"\n> {elem.get_text(strip=True)}\n\n"
             elif elem.name == 'pre':
-                content_blocks.append(f"\n[Code Block]\n{elem.get_text(strip=True)}\n\n")
+                content += f"\n[Code Block]\n{elem.get_text(strip=True)}\n\n"
             elif elem.name == 'span':
                 span_text = elem.get_text(strip=True)
-                if span_text and span_text not in "".join(content_blocks):
-                    content_blocks.append(span_text + "\n\n")
-            elif elem.name == 'img':
-                src = elem.get('src')
-                if src:
-                    if src.startswith('/'):
-                        src = BASE_URL + src
-                    content_blocks.append(f"\n[IMAGE: {src}]\n")
+                # Only add span text if meaningful and not already included
+                if span_text and span_text not in content:
+                    content += span_text + "\n\n"
 
-        content_combined = "".join(content_blocks).strip()
-
-        # ✅ Related articles scraping
+        # ✅ Related articles
         related_articles = []
         related_section = soup.find("div", class_="related-articles") or soup.find("aside")
         if related_section:
@@ -87,11 +80,21 @@ def scrape_article(url):
                 if rel_title and rel_url:
                     related_articles.append({"title": rel_title, "url": rel_url})
 
+        # ✅ Images
+        images = []
+        for img in soup.find_all('img'):
+            src = img.get('src')
+            if src and src.startswith('http'):
+                images.append(src)
+            elif src and src.startswith('/'):
+                images.append(BASE_URL + src)
+
         return {
             "url": url,
             "title": title,
             "breadcrumbs": breadcrumbs,
-            "content": content_combined,
+            "content": content.strip(),
+            "images": images,
             "related_articles": related_articles
         }
 
@@ -99,24 +102,23 @@ def scrape_article(url):
         print(f"Error scraping {url}: {e}")
         return None
 
-def translate_content_with_images(content):
-    if not content.strip():
+def translate_text(content):
+    if not content or not isinstance(content, str) or not content.strip():
         return "Translation failed"
-
-    prompt = (
-        "You will be given article content from a crypto trading tutorial in English, "
-        "including headings, paragraphs, bullet points, and image placeholders in this format: [IMAGE: image_url]. "
-        "Translate the entire content into Malay (Bahasa Malaysia), and reformat it into a clean, structured tutorial style. "
-        "Wherever you see [IMAGE: image_url], replace it with a Markdown image tag like this: ![Gambar](image_url) "
-        "in that exact position without changing the order. "
-        "Maintain all headings, bullet points, quotes, and code blocks. "
-        "Do not add advertisements or extra explanations. "
-        "Only return the translated tutorial with images embedded in the correct places.\n\n"
-        f"{content}"
-    )
 
     gemini_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={GOOGLE_API_KEY}"
     headers = {"Content-Type": "application/json"}
+    prompt = (
+    "You will be given article content scraped from a crypto trading tutorial. "
+    "Translate this entire text into Malay (Bahasa Malaysia) and reformat it into a clean, structured tutorial style. "
+    "Maintain and enhance the structure with clear headings, bullet points, code blocks, and quotes where applicable. "
+    "Ensure the content flows step by step like a professional tutorial. "
+    "Do not add your own explanations, do not include advertisements or promotional sentences. "
+    "Only provide the clean, translated tutorial with proper formatting, headings, and sections:\n\n"
+    f"{content}"
+)
+
+
     payload = {
         "contents": [{"parts": [{"text": prompt}]}]
     }
@@ -126,8 +128,8 @@ def translate_content_with_images(content):
             response = requests.post(gemini_url, headers=headers, json=payload)
             if response.status_code == 200:
                 data = response.json()
-                translated_text = data.get("candidates", [{}])[0].get("content", {}).get("parts", [{}])[0].get("text", "")
-                return translated_text.strip() if translated_text else "Translation failed"
+                translated = data.get("candidates", [{}])[0].get("content", {}).get("parts", [{}])[0].get("text", "")
+                return translated.strip() if translated else "Translation failed"
             elif response.status_code == 429:
                 print(f"[Rate Limit] Retrying in {2 ** attempt} seconds...")
                 time.sleep(2 ** attempt)
@@ -140,7 +142,7 @@ def translate_content_with_images(content):
     return "Translation failed"
 
 def save_articles(articles):
-    filename = "mexc_translated_articles.json"
+    filename = "mexc_translated_articles.json"  # Always overwrite
     with open(filename, 'w', encoding='utf-8') as f:
         json.dump({
             "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -161,7 +163,7 @@ def main():
         if article:
             max_retries = 3
             for attempt in range(max_retries):
-                translated_content = translate_content_with_images(article['content'])
+                translated_content = translate_text(article['content'])
                 if translated_content != "Translation failed":
                     break
                 print(f"[Retry {attempt + 1}] Translation failed for: {article['title']}")
@@ -170,7 +172,7 @@ def main():
                 print(f"[SKIP] Failed to translate after {max_retries} attempts: {article['title']}")
                 continue
 
-            article['translated_tutorial'] = translated_content
+            article['translated_content'] = translated_content
             articles_data.append(article)
             time.sleep(2)
     save_articles(articles_data)
