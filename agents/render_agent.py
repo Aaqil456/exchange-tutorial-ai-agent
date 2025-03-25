@@ -1,39 +1,22 @@
-import json
-from datetime import datetime
-from crewai import Agent
+from pydantic import BaseModel
 
-class RenderAgent(Agent):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+class RenderAgent(BaseModel):
+    role: str
+    goal: str
+    backstory: str
 
-    def run(self):
-        print("📜 Rendering final HTML for articles...")
+    def run(self, articles):
+        print("🔎 Rendering articles into final HTML structure...")
+        rendered_articles = []
 
-        with open("mexc_translated_articles.json", "r", encoding="utf-8") as file:
-            data = json.load(file)
-
-        for article in data["articles"]:
-            translated_html = article.get("translated_html", "")
-            if not translated_html or translated_html == "Translation failed":
-                print(f"⚠️ Skipping {article['title']} due to missing translation.")
-                continue
-
-            # Generate final HTML structure
-            final_html = f"""
-            <article>
+        for article in articles:
+            rendered_html = f"""
                 <h1>{article['title']}</h1>
-                <p><strong>Breadcrumbs:</strong> {article.get('breadcrumbs', '')}</p>
-                <div class="tutorial-content">
-                    {translated_html}
-                </div>
-            </article>
+                <p><a href="{article['url']}">Original Article Link</a></p>
+                {article['translated_html']}
             """
-            article["final_html"] = final_html.strip()
+            article['final_html'] = rendered_html
+            rendered_articles.append(article)
 
-        # Save back to JSON
-        data["timestamp"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        with open("mexc_translated_articles.json", "w", encoding="utf-8") as file:
-            json.dump(data, file, ensure_ascii=False, indent=4)
-
-        print("✅ Rendered final HTML for all articles.")
-
+        print(f"✅ Rendered {len(rendered_articles)} articles.")
+        return rendered_articles
