@@ -1,0 +1,48 @@
+crew:
+  name: "MEXC Tutorial Translation Crew"
+  description: "A multi-agent system to scrape tutorials, translate text, keep images in position, and save JSON."
+
+agents:
+  - name: ScraperAgent
+    role: "Scraper"
+    file_path: "agents/scraper_agent.py"
+  - name: CleanerAgent
+    role: "Cleaner"
+    file_path: "agents/cleaner_agent.py"
+  - name: ImageValidator
+    role: "Validator"
+    file_path: "agents/image_validator.py"
+  - name: TranslatorAgent
+    role: "Translator"
+    file_path: "agents/translator_agent.py"
+  - name: FormatterAgent
+    role: "Formatter"
+    file_path: "agents/formatter_agent.py"
+  - name: ValidatorAgent
+    role: "Output Validator"
+    file_path: "agents/validator_agent.py"
+  - name: SaverAgent
+    role: "Saver"
+    file_path: "agents/saver_agent.py"
+
+tasks:
+  - name: "Scrape Articles"
+    agent: ScraperAgent
+    next: CleanerAgent
+  - name: "Clean Content"
+    agent: CleanerAgent
+    next: ImageValidator
+  - name: "Validate Images"
+    agent: ImageValidator
+    next: TranslatorAgent
+  - name: "Translate"
+    agent: TranslatorAgent
+    next: FormatterAgent
+  - name: "Format Final Output"
+    agent: FormatterAgent
+    next: ValidatorAgent
+  - name: "Final Validation"
+    agent: ValidatorAgent
+    next: SaverAgent
+  - name: "Save JSON"
+    agent: SaverAgent
