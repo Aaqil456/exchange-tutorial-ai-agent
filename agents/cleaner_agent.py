@@ -1,6 +1,6 @@
 import requests
 import os
-from .base_agent import BaseAgent
+from agents.base_agent import BaseAgent
 import time
 
 GOOGLE_API_KEY = os.environ.get("GEMINI_API_KEY")
