@@ -1,81 +1,60 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Translated MEXC Tutorials (Exchange Tutorial AI Agent)</title>
-  <style>
-    body {
-      background-color: #111;
-      color: #fff;
-      font-family: Arial, sans-serif;
-    }
-    h1 {
-      text-align: center;
-      color: #00f0ff;
-    }
-    .carousel {
-      display: flex;
-      overflow-x: auto;
-      gap: 20px;
-      padding: 20px;
-      scroll-snap-type: x mandatory;
-    }
-    .carousel::-webkit-scrollbar {
-      display: none;
-    }
-    .card {
-      flex: 0 0 auto;
-      width: 350px;
-      background-color: #222;
-      border-radius: 10px;
-      padding: 20px;
-      scroll-snap-align: start;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.5);
-    }
-    .card h2 {
-      color: #00f0ff;
-      font-size: 20px;
-    }
-    .card a {
-      color: #00f0ff;
-      text-decoration: underline;
-      display: block;
-      margin-bottom: 10px;
-    }
-    .card-content {
-      overflow-y: auto;
-      max-height: 300px;
-    }
-    img {
-      max-width: 100%;
-      height: auto;
-      margin: 10px 0;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <title>MEXC Translated Tutorials</title>
+    <style>
+        body {
+            background-color: #121212;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 20px;
+        }
+        h1, h2, h3 {
+            color: #03dac6;
+        }
+        p {
+            margin-bottom: 1em;
+        }
+        img {
+            max-width: 100%;
+            margin: 20px 0;
+            border: 1px solid #444;
+        }
+        .article {
+            margin-bottom: 60px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 40px;
+        }
+        a {
+            color: #8ab4f8;
+        }
+    </style>
 </head>
 <body>
-  <h1>Translated MEXC Tutorials (Exchange Tutorial AI Agent)</h1>
-  <div class="carousel" id="article-carousel"></div>
+    <h1>Translated MEXC Tutorials (Exchange Tutorial AI Agent)</h1>
+    <div id="content"></div>
 
-  <script>
-    fetch('data.json')
-      .then(response => response.json())
-      .then(data => {
-        const carousel = document.getElementById('article-carousel');
-        data.articles.forEach(article => {
-          const card = document.createElement('div');
-          card.className = 'card';
-          card.innerHTML = `
-            <h2>${article.title}</h2>
-            <a href="${article.url}" target="_blank">Original Article Link</a>
-            <div class="card-content">
-              ${article.final_html}
-            </div>
-          `;
-          carousel.appendChild(card);
-        });
-      });
-  </script>
+    <script>
+        fetch('mexc_translated_articles.json')
+            .then(response => response.json())
+            .then(data => {
+                const contentDiv = document.getElementById('content');
+                data.articles.forEach(article => {
+                    const articleDiv = document.createElement('div');
+                    articleDiv.classList.add('article');
+                    articleDiv.innerHTML = `
+                        <h2>${article.title}</h2>
+                        <p><a href="${article.url}" target="_blank">Original Article Link</a></p>
+                        ${article.final_html}
+                    `;
+                    contentDiv.appendChild(articleDiv);
+                });
+            })
+            .catch(error => {
+                console.error('Error loading JSON:', error);
+            });
+    </script>
 </body>
 </html>
