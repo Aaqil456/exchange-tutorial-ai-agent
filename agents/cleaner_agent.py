@@ -1,7 +1,7 @@
 import requests
 import os
 import time
-from agents.base_agent import BaseAgent  # ✅ Absolute import, no dot notation
+from agents.base_agent import BaseAgent
 
 # Read Gemini API Key from environment
 GOOGLE_API_KEY = os.environ.get("GEMINI_API_KEY")
@@ -15,12 +15,14 @@ class CleanerAgent(BaseAgent):
             decision = self.llm_decide(article)
 
             if decision.lower() == "keep":
-                print(f"✅ Keeping: {article['title']}")
+                cleaned_content = self.clean_content(article)
+                article["content"] = cleaned_content
+                print(f"✅ Keeping and cleaning: {article['title']}")
                 cleaned_articles.append(article)
             else:
                 print(f"🚫 Skipping: {article['title']}")
 
-            time.sleep(1)  # ⏱️ Respect Gemini API rate limits
+            time.sleep(1)  # Respect API limits
 
         print(f"✅ Cleaning complete. Articles kept: {len(cleaned_articles)}")
         return cleaned_articles
@@ -58,5 +60,39 @@ class CleanerAgent(BaseAgent):
                 return "Skip"
 
         except Exception as e:
-            print(f"❌ Exception during LLM call: {e}")
+            print(f"❌ Exception during LLM decision: {e}")
             return "Skip"
+
+    def clean_content(self, article):
+        prompt = (
+            "You are an expert content editor. "
+            "Remove all footer content, promotional blocks, community links, repeated phrases like 'Daftar untuk bonus', irrelevant text, and anything that is not part of the actual tutorial. "
+            "Keep only the structured tutorial with its useful headings, steps, and images.\n\n"
+            f"Title: {article.get('title', '')}\n"
+            f"Content:\n{article.get('content', '')}\n\n"
+            "Cleaned content:"
+        )
+
+        try:
+            response = requests.post(
+                f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={GOOGLE_API_KEY}",
+                headers={"Content-Type": "application/json"},
+                json={"contents": [{"parts": [{"text": prompt}]}]}
+            )
+
+            if response.status_code == 200:
+                cleaned = (
+                    response.json()
+                    .get("candidates", [{}])[0]
+                    .get("content", {})
+                    .get("parts", [{}])[0]
+                    .get("text", "")
+                )
+                return cleaned.strip()
+            else:
+                print(f"⚠️ Gemini cleaning API error {response.status_code}: {response.text}")
+                return article.get("content", "")
+
+        except Exception as e:
+            print(f"❌ Exception during cleaning content: {e}")
+            return article.get("content", "")
