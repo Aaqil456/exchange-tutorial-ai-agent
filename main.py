@@ -1,3 +1,9 @@
+import sys
+import os
+
+# Add root directory to Python path
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
 from agents.scraper_agent import ScraperAgent
 from agents.cleaner_agent import CleanerAgent
 from agents.image_validator import ImageValidator
