@@ -11,6 +11,7 @@ class TranslatorAgent(Agent):
         for article in articles:
             prompt = (
                 "Translate the following tutorial content from English to Malay (Bahasa Malaysia). "
+                "the translation should have the tone of natural kolokial malay malaysian. Make it conversational, simple, friendly, like how a friend shares info — but no over-the-top slang or yelling words."
                 "Maintain the structure and do not alter the position of images (already embedded as <img> tags). "
                 "Translate all text content but do not translate anything inside <img> tags.\n\n"
                 f"{article['content']}"
