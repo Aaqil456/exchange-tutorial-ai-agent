@@ -1,33 +1,38 @@
 import requests
 import os
 import time
-from agents.base_agent import BaseAgent
+import re
+from bs4 import BeautifulSoup
+from agents.base_agent import BaseAgent  # ✅ Absolute import
 
 # Read Gemini API Key from environment
 GOOGLE_API_KEY = os.environ.get("GEMINI_API_KEY")
 
 class CleanerAgent(BaseAgent):
     def run(self, articles):
-        print("🧹 Cleaning articles with LLM assistance...")
+        print("🧹 Cleaning articles with LLM assistance (text + image filtering)...")
         cleaned_articles = []
 
         for article in articles:
-            decision = self.llm_decide(article)
+            decision = self.llm_decide_article(article)
 
             if decision.lower() == "keep":
-                cleaned_content = self.clean_content(article)
-                article["content"] = cleaned_content
-                print(f"✅ Keeping and cleaning: {article['title']}")
+                print(f"✅ Keeping: {article['title']}")
+
+                # Clean irrelevant images
+                filtered_content = self.filter_irrelevant_images(article['content'])
+                article['content'] = filtered_content
+
                 cleaned_articles.append(article)
             else:
                 print(f"🚫 Skipping: {article['title']}")
 
-            time.sleep(1)  # Respect API limits
+            time.sleep(1)  # Respect Gemini API rate limits
 
         print(f"✅ Cleaning complete. Articles kept: {len(cleaned_articles)}")
         return cleaned_articles
 
-    def llm_decide(self, article):
+    def llm_decide_article(self, article):
         prompt = (
             "You are an expert tutorial content reviewer. "
             "Analyze the following article and decide if it is a structured tutorial containing clear steps, headings, explanations, and helpful images. "
@@ -37,7 +42,47 @@ class CleanerAgent(BaseAgent):
             f"Content:\n{article.get('content', '')}\n\n"
             "Your decision:"
         )
+        return self.ask_gemini(prompt)
 
+    def filter_irrelevant_images(self, html):
+        soup = BeautifulSoup(html, "html.parser")
+        images = soup.find_all("img")
+
+        for img in images:
+            context = self.extract_image_context(soup, img)
+            prompt = (
+                "You are a tutorial optimization assistant. Analyze the following image and its context. "
+                "If the image is useful to the tutorial (e.g. shows a screenshot, a chart, or explains a step), respond with 'Keep'. "
+                "If it is decorative, branding, unrelated, or a footer image (e.g. MEXC logo, bonus banner, social icons), respond with 'Remove'. "
+                "Only reply 'Keep' or 'Remove'.\n\n"
+                f"Image src: {img.get('src')}\n"
+                f"Surrounding Context:\n{context}\n\n"
+                "Your decision:"
+            )
+
+            decision = self.ask_gemini(prompt)
+            if decision.lower() == "remove":
+                print(f"🗑️ Removing image: {img.get('src')}")
+                img.decompose()
+            else:
+                print(f"🖼️ Keeping image: {img.get('src')}")
+
+            time.sleep(1)
+
+        return str(soup)
+
+    def extract_image_context(self, soup, img_tag):
+        # Get nearby text around the image
+        context = []
+        for tag in img_tag.find_all_previous(limit=3):
+            if tag.name in ["p", "h1", "h2", "h3"]:
+                context.append(tag.get_text(strip=True))
+        for tag in img_tag.find_all_next(limit=3):
+            if tag.name in ["p", "h1", "h2", "h3"]:
+                context.append(tag.get_text(strip=True))
+        return "\n".join(context).strip()
+
+    def ask_gemini(self, prompt):
         try:
             response = requests.post(
                 f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={GOOGLE_API_KEY}",
@@ -46,53 +91,17 @@ class CleanerAgent(BaseAgent):
             )
 
             if response.status_code == 200:
-                decision_text = (
+                return (
                     response.json()
                     .get("candidates", [{}])[0]
                     .get("content", {})
                     .get("parts", [{}])[0]
                     .get("text", "")
+                    .strip()
                 )
-                print(f"🤖 LLM Decision: {decision_text.strip()}")
-                return decision_text.strip()
             else:
-                print(f"⚠️ LLM API error {response.status_code}: {response.text}")
-                return "Skip"
-
+                print(f"⚠️ Gemini API error {response.status_code}: {response.text}")
+                return "Keep"  # default to keep if uncertain
         except Exception as e:
-            print(f"❌ Exception during LLM decision: {e}")
-            return "Skip"
-
-    def clean_content(self, article):
-        prompt = (
-            "You are an expert content editor. "
-            "Remove all footer content, promotional blocks, community links, repeated phrases like 'Daftar untuk bonus', irrelevant text, and anything that is not part of the actual tutorial. "
-            "Keep only the structured tutorial with its useful headings, steps, and images.\n\n"
-            f"Title: {article.get('title', '')}\n"
-            f"Content:\n{article.get('content', '')}\n\n"
-            "Cleaned content:"
-        )
-
-        try:
-            response = requests.post(
-                f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={GOOGLE_API_KEY}",
-                headers={"Content-Type": "application/json"},
-                json={"contents": [{"parts": [{"text": prompt}]}]}
-            )
-
-            if response.status_code == 200:
-                cleaned = (
-                    response.json()
-                    .get("candidates", [{}])[0]
-                    .get("content", {})
-                    .get("parts", [{}])[0]
-                    .get("text", "")
-                )
-                return cleaned.strip()
-            else:
-                print(f"⚠️ Gemini cleaning API error {response.status_code}: {response.text}")
-                return article.get("content", "")
-
-        except Exception as e:
-            print(f"❌ Exception during cleaning content: {e}")
-            return article.get("content", "")
+            print(f"❌ Gemini call error: {e}")
+            return "Keep"
