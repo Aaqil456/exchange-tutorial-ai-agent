@@ -1,9 +1,7 @@
 name: MEXC Scraper, Translate & Push JSON
 
 on:
-  workflow_dispatch:   # Manual trigger from GitHub Actions tab
-  # schedule:
-  #   - cron: '0 * * * *'  # Uncomment if you want it to run hourly
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -37,6 +35,9 @@ jobs:
             echo "❌ ACTIONS_PAT secret is missing!"
             exit 1
           fi
+
+      - name: Set PYTHONPATH  # ✅ FIX: Add this step!
+        run: echo "PYTHONPATH=$GITHUB_WORKSPACE" >> $GITHUB_ENV
 
       - name: Run MEXC scraping and translation via CrewAI
         env:
