@@ -2,12 +2,14 @@ import os
 import requests
 import base64
 import time
+import json
 from .base_agent import BaseAgent  # ✅ Use relative import
 
+# === ENV VARIABLES ===
 WP_URL = os.getenv("WP_URL", "https://teknologiblockchain.com/wp-json/wp/v2")
 WP_USER = os.getenv("WP_USER")
 WP_APP_PASSWORD = os.getenv("WP_APP_PASSWORD")
-PANDUAN_CATEGORY_ID = 1395  # ✅ Change this if your Panduan category ID is different
+PANDUAN_CATEGORY_ID = 1395  # ✅ Confirmed category ID for Panduan
 
 class WordPressAgent(BaseAgent):
     def run(self, articles):
@@ -21,7 +23,6 @@ class WordPressAgent(BaseAgent):
             original_url = article.get("url", "")
 
             media_id, uploaded_image_url = self.upload_image_to_wp(image_url)
-
             success = self.post_to_wp(title, content, original_url, uploaded_image_url, media_id)
 
             if success:
@@ -38,15 +39,23 @@ class WordPressAgent(BaseAgent):
     def post_to_wp(self, title, content, original_url, uploaded_image_url=None, media_id=None):
         credentials = f"{WP_USER}:{WP_APP_PASSWORD}"
         token = base64.b64encode(credentials.encode()).decode()
-        headers = {"Authorization": f"Basic {token}", "Content-Type": "application/json"}
+        headers = {
+            "Authorization": f"Basic {token}",
+            "Content-Type": "application/json"
+        }
 
         image_html = f"<img src='{uploaded_image_url}' alt='{title}'/><br>" if uploaded_image_url else ""
-        full_content = f"<h1>{title}</h1><br>{image_html}{content}<p>📌 Baca artikel asal di sini: <a href='{original_url}'>{original_url}</a></p>"
+        full_content = (
+            f"<h1>{title}</h1><br>"
+            f"{image_html}"
+            f"{content}"
+            f"<p>📌 Baca artikel asal di sini: <a href='{original_url}'>{original_url}</a></p>"
+        )
 
         post_data = {
             "title": title,
             "content": full_content,
-            "status": "draft",  # ✅ Save as draft
+            "status": "draft",  # ✅ Post as draft
             "categories": [PANDUAN_CATEGORY_ID]
         }
 
@@ -56,9 +65,18 @@ class WordPressAgent(BaseAgent):
 
         try:
             response = requests.post(f"{WP_URL}/posts", headers=headers, json=post_data)
-            return response.status_code == 201
+
+            if response.status_code == 201:
+                return True
+            else:
+                print(f"❌ Failed to post article '{title}'")
+                print(f"📡 Status Code: {response.status_code}")
+                print(f"📄 Response: {response.text}")
+                print(f"📦 Payload: {json.dumps(post_data, indent=2)}")
+                return False
+
         except Exception as e:
-            print(f"[Post Error] {e}")
+            print(f"[Post Exception] {e}")
             return False
 
     def upload_image_to_wp(self, image_url):
@@ -72,10 +90,11 @@ class WordPressAgent(BaseAgent):
             }
             img_response = requests.get(image_url, headers=headers)
             if img_response.status_code != 200:
+                print(f"[Image Download Error] Status {img_response.status_code}")
                 return None, None
             image_data = img_response.content
         except Exception as e:
-            print(f"[Image Download Error] {e}")
+            print(f"[Image Download Exception] {e}")
             return None, None
 
         media_endpoint = f"{WP_URL}/media"
@@ -94,7 +113,10 @@ class WordPressAgent(BaseAgent):
             if upload_response.status_code == 201:
                 media_data = upload_response.json()
                 return media_data.get("id"), media_data.get("source_url")
+            else:
+                print(f"[Image Upload Failed] Status: {upload_response.status_code}")
+                print(f"🪵 Response: {upload_response.text}")
         except Exception as e:
-            print(f"[Image Upload Error] {e}")
+            print(f"[Image Upload Exception] {e}")
 
         return None, None
