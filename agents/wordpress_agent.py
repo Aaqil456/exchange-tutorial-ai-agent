@@ -7,7 +7,7 @@ from .base_agent import BaseAgent  # ✅ Use relative import
 WP_URL = os.getenv("WP_URL", "https://teknologiblockchain.com/wp-json/wp/v2")
 WP_USER = os.getenv("WP_USER")
 WP_APP_PASSWORD = os.getenv("WP_APP_PASSWORD")
-PANDUAN_CATEGORY_ID = 1818  # ✅ Change this if your Panduan category ID is different
+PANDUAN_CATEGORY_ID = 1395  # ✅ Change this if your Panduan category ID is different
 
 class WordPressAgent(BaseAgent):
     def run(self, articles):
