@@ -11,8 +11,8 @@ from agents.translator_agent import TranslatorAgent
 from agents.formatter_agent import FormatterAgent
 from agents.validator_agent import ValidatorAgent
 from agents.saver_agent import SaverAgent
-from agents.render_agent import RenderAgent  # ✅ Added RenderAgent import
-from agents.wordpress_agent import WordPressAgent
+from agents.render_agent import RenderAgent
+from agents.wordpress_agent import WordPressAgent  # ✅ Make sure this is correct
 
 def main():
     # Agent: Scraper
@@ -50,7 +50,7 @@ def main():
         backstory="You ensure everything looks beautiful, with clear headings, images, and structure."
     )
 
-    # ✅ Agent: Render Agent
+    # Agent: Render Agent
     renderer = RenderAgent(
         role="Renderer",
         goal="Render the translated tutorials into final structured HTML with images in correct positions.",
@@ -64,15 +64,6 @@ def main():
         backstory="You are the final checkpoint for quality assurance."
     )
 
-    wordpress = WordPressAgent(
-        role="WordPress Publisher",
-        goal="Post articles to WordPress as drafts under the Panduan category.",
-        backstory="You help publish tutorials to WordPress in an organized, safe manner."
-    )
-
-    # ... before saver.run(...)
-    wordpress.run(final_validated)
-
     # Agent: Saver
     saver = SaverAgent(
         role="Saver",
@@ -80,31 +71,45 @@ def main():
         backstory="You safely store the final tutorial collection for publishing."
     )
 
-    print("Scraping articles...")
-    articles = scraper.run()
+    # Agent: WordPress Publisher
+    wordpress = WordPressAgent(
+        role="WordPress Publisher",
+        goal="Post articles to WordPress as drafts under the Panduan category.",
+        backstory="You help publish tutorials to WordPress in an organized, safe manner."
+    )
 
-    print("Cleaning articles...")
-    cleaned_articles = cleaner.run(articles)
+    try:
+        print("Scraping articles...")
+        articles = scraper.run()
 
-    print("Validating images...")
-    validated_articles = image_validator.run(cleaned_articles)
+        print("Cleaning articles...")
+        cleaned_articles = cleaner.run(articles)
 
-    print("Translating articles...")
-    translated_articles = translator.run(validated_articles)
+        print("Validating images...")
+        validated_articles = image_validator.run(cleaned_articles)
 
-    print("Formatting articles...")
-    formatted_articles = formatter.run(translated_articles)
+        print("Translating articles...")
+        translated_articles = translator.run(validated_articles)
 
-    print("Rendering articles into final HTML...")
-    rendered_articles = renderer.run(formatted_articles)  # ✅ New render step
+        print("Formatting articles...")
+        formatted_articles = formatter.run(translated_articles)
 
-    print("Validating final output...")
-    final_validated = validator.run(rendered_articles)
+        print("Rendering articles into final HTML...")
+        rendered_articles = renderer.run(formatted_articles)
 
-    print("Saving to JSON...")
-    saver.run(final_validated)
+        print("Validating final output...")
+        final_validated = validator.run(rendered_articles)
 
-    print("Process completed successfully!")
+        print("Posting to WordPress as drafts...")
+        wordpress.run(final_validated)  # ✅ Moved here after validation
+
+        print("Saving to JSON...")
+        saver.run(final_validated)
+
+        print("✅ Process completed successfully!")
+
+    except Exception as e:
+        print(f"❌ ERROR in pipeline: {e}")
 
 if __name__ == "__main__":
     main()
