@@ -1,5 +1,5 @@
 crewai
 requests
-undetected-chromedriver
+undetected-chromedriver==3.5.5
 beautifulsoup4
 google-generativeai
