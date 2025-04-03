@@ -12,7 +12,7 @@ class ScraperAgent(Agent):
         options_main.add_argument('--headless')
         options_main.add_argument('--no-sandbox')
         options_main.add_argument('--disable-dev-shm-usage')
-        driver = uc.Chrome(options=options_main)
+        driver = uc.Chrome(options=options_main, version_main=134)  # ✅ Force version compatibility
 
         driver.get(f"{BASE_URL}/learn/trading-guide")
         soup = BeautifulSoup(driver.page_source, "html.parser")
@@ -36,7 +36,7 @@ class ScraperAgent(Agent):
             options.add_argument('--headless')
             options.add_argument('--no-sandbox')
             options.add_argument('--disable-dev-shm-usage')
-            driver = uc.Chrome(options=options)
+            driver = uc.Chrome(options=options, version_main=134)  # ✅ Force version compatibility again
 
             driver.get(link)
             page_soup = BeautifulSoup(driver.page_source, "html.parser")
@@ -59,7 +59,6 @@ class ScraperAgent(Agent):
                 elif elem.name == 'pre':
                     content_blocks.append(f"<pre>{elem.get_text(strip=True)}</pre>")
                 elif elem.name == 'span':
-                    # Add span text if meaningful
                     text = elem.get_text(strip=True)
                     if text:
                         content_blocks.append(f"<p>{text}</p>")
