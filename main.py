@@ -12,6 +12,7 @@ from agents.formatter_agent import FormatterAgent
 from agents.validator_agent import ValidatorAgent
 from agents.saver_agent import SaverAgent
 from agents.render_agent import RenderAgent  # ✅ Added RenderAgent import
+from agents.wordpress_agent import WordPressAgent
 
 def main():
     # Agent: Scraper
@@ -62,6 +63,15 @@ def main():
         goal="Perform final validation to ensure quality and correctness.",
         backstory="You are the final checkpoint for quality assurance."
     )
+
+    wordpress = WordPressAgent(
+        role="WordPress Publisher",
+        goal="Post articles to WordPress as drafts under the Panduan category.",
+        backstory="You help publish tutorials to WordPress in an organized, safe manner."
+    )
+
+    # ... before saver.run(...)
+    wordpress.run(final_validated)
 
     # Agent: Saver
     saver = SaverAgent(
