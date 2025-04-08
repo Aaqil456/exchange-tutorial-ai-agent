@@ -35,6 +35,19 @@ jobs:
             echo "❌ ACTIONS_PAT secret is missing!"
             exit 1
           fi
+          # Add these secret checks for WordPress
+          if [ -z "${{ secrets.WP_USER }}" ]; then
+            echo "❌ WP_USER secret is missing!"
+            exit 1
+          fi
+          if [ -z "${{ secrets.WP_APP_PASSWORD }}" ]; then
+            echo "❌ WP_APP_PASSWORD secret is missing!"
+            exit 1
+          fi
+          if [ -z "${{ secrets.WP_URL }}" ]; then
+            echo "❌ WP_URL secret is missing!"
+            exit 1
+          fi
 
       - name: Set PYTHONPATH  # ✅ FIX: Add this step!
         run: echo "PYTHONPATH=$GITHUB_WORKSPACE" >> $GITHUB_ENV
@@ -42,6 +55,9 @@ jobs:
       - name: Run MEXC scraping and translation via CrewAI
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          WP_USER: ${{ secrets.WP_USER }}         # Pass WP_USER from GitHub Secrets
+          WP_APP_PASSWORD: ${{ secrets.WP_APP_PASSWORD }}  # Pass WP_APP_PASSWORD from GitHub Secrets
+          WP_URL: ${{ secrets.WP_URL }}           # Pass WP_URL from GitHub Secrets
         run: python main.py
 
       - name: Commit and push JSON output
