@@ -55,7 +55,7 @@ class WordPressAgent(BaseAgent):
         post_data = {
             "title": title,
             "content": full_content,
-            "status": "publish",  # ✅ Post as draft
+            "status": "draft",  # ✅ Post as draft
             "categories": [PANDUAN_CATEGORY_ID]
         }
 
