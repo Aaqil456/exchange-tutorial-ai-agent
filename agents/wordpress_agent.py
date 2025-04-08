@@ -79,7 +79,7 @@ class WordPressAgent(BaseAgent):
         post_data = {
             "title": title,
             "content": full_content,
-            "status": "draft",
+            "status": "private",
             "categories": [PANDUAN_CATEGORY_ID]
         }
 
