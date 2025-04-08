@@ -11,7 +11,7 @@ class TranslatorAgent(Agent):
         for article in articles:
             # Translate the title first
             title_prompt = (
-                "Translate the following title from English to Malay (Bahasa Malaysia). "
+                "Translate the following title into Malay (Bahasa Malaysia). "
                 "The translation should have the tone of natural colloquial Malaysian Malay. "
                 "Keep it simple, friendly, and conversational, but avoid over-the-top slang or shouting words.\n\n"
                 f"{article['title']}"
@@ -19,7 +19,7 @@ class TranslatorAgent(Agent):
 
             # Translate the content
             content_prompt = (
-                "Translate the following tutorial content from English to Malay (Bahasa Malaysia). "
+                "Translate the following tutorial content into Malay (Bahasa Malaysia). "
                 "The translation should have the tone of natural colloquial Malaysian Malay. "
                 "Make it conversational, simple, friendly, like how a friend shares info — but no over-the-top slang or yelling words."
                 "Maintain the structure and do not alter the position of images (already embedded as <img> tags). "
