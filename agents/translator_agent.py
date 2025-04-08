@@ -2,8 +2,12 @@ from crewai import Agent
 import requests
 import os
 import time
+from .base_agent import BaseAgent  # Ensure this import is correct
 
-class TranslatorAgent(Agent):
+class TranslatorAgent(BaseAgent):  # Now inheriting from BaseAgent
+    def __init__(self, role, goal, backstory):
+        super().__init__(role, goal, backstory)  # Initialize with BaseAgent's constructor
+    
     def run(self, articles):
         GOOGLE_API_KEY = os.getenv("GEMINI_API_KEY")
         translated_articles = []
