@@ -7,8 +7,8 @@ from .base_agent import BaseAgent  # ✅ Ensure base_agent.py exists in the same
 
 # === ENV VARIABLES (from GitHub Secrets or OS) ===
 WP_URL = os.getenv("WP_URL", "https://teknologiblockchain.com/wp-json/wp/v2")
-WP_USER = os.getenv("WP_USER","teknologiblockchain2024")
-WP_APP_PASSWORD = os.getenv("WP_APP_PASSWORD","1Kpk sOva 9ESa MmHd gPs9 Hm3o")
+WP_USER = os.getenv("WP_USER")
+WP_APP_PASSWORD = os.getenv("WP_APP_PASSWORD")
 PANDUAN_CATEGORY_ID = 1395  # Category ID for 'Panduan'
 
 class WordPressAgent(BaseAgent):
