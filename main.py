@@ -5,7 +5,6 @@ import os
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from agents.scraper_agent import ScraperAgent
-from agents.cleaner_agent import CleanerAgent
 from agents.image_validator import ImageValidator
 from agents.translator_agent import TranslatorAgent
 from agents.formatter_agent import FormatterAgent
@@ -20,13 +19,6 @@ def main():
         role="Web Scraper",
         goal="Scrape tutorials with all content and images intact.",
         backstory="You are responsible for getting clean and complete tutorial content from the MEXC trading guide page."
-    )
-
-    # Agent: Cleaner
-    cleaner = CleanerAgent(
-        role="Content Cleaner",
-        goal="Filter and clean the scraped articles, removing anything irrelevant.",
-        backstory="You ensure only high-quality tutorial articles proceed to translation."
     )
 
     # Agent: Image Validator
@@ -83,11 +75,8 @@ def main():
         print("Scraping articles...")
         articles = scraper.run()
 
-        print("Cleaning articles...")
-        cleaned_articles = cleaner.run(articles)
-
         print("Validating images...")
-        validated_articles = image_validator.run(cleaned_articles)
+        validated_articles = image_validator.run(articles)
 
         print("Translating articles...")
         translated_articles = translator.run(validated_articles)
