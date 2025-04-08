@@ -3,7 +3,8 @@ import requests
 import base64
 import time
 import json
-from .base_agent import BaseAgent  # ✅ Ensure base_agent.py exists in the same package
+from .base_agent import BaseAgent  # Ensure base_agent.py exists in the same package
+from .translator_agent import TranslatorAgent  # Import TranslatorAgent from translator_agent.py
 
 # === ENV VARIABLES (from GitHub Secrets or OS) ===
 WP_URL = os.getenv("WP_URL", "https://teknologiblockchain.com/wp-json/wp/v2")
@@ -25,23 +26,31 @@ class WordPressAgent(BaseAgent):
         # 🔐 Quick credential check
         self._test_wp_auth()
 
+        # Instantiate TranslatorAgent
+        translator_agent = TranslatorAgent()
+
         posted_count = 0
         for article in articles:
-            title = article.get("title", "Untitled")
-            content = article.get("content", "")
+            # First, translate the title and content
+            translated_articles = translator_agent.run([article])
+            translated_article = translated_articles[0]  # Since we passed a list of 1 article
+
+            translated_title = translated_article.get("translated_title", translated_article.get("title"))
+            translated_content = translated_article.get("translated_html", translated_article.get("content"))
+
+            print(f"\n📄 Posting article: {translated_title}")
             image_url = article.get("image", "")
             original_url = article.get("url", "")
 
-            print(f"\n📄 Posting article: {title}")
             media_id, uploaded_image_url = self.upload_image_to_wp(image_url)
 
-            success = self.post_to_wp(title, content, original_url, uploaded_image_url, media_id)
+            success = self.post_to_wp(translated_title, translated_content, original_url, uploaded_image_url, media_id)
 
             if success:
                 posted_count += 1
-                print(f"✅ Draft saved: {title}")
+                print(f"✅ Draft saved: {translated_title}")
             else:
-                print(f"❌ Failed to post: {title}")
+                print(f"❌ Failed to post: {translated_title}")
 
             time.sleep(1)
 
