@@ -13,6 +13,10 @@ WP_APP_PASSWORD = os.getenv("WP_APP_PASSWORD")
 PANDUAN_CATEGORY_ID = 1395  # Category ID for 'Panduan'
 
 class WordPressAgent(BaseAgent):
+    def __init__(self, role, goal, backstory, translator_agent):
+        super().__init__(role, goal, backstory)
+        self.translator_agent = translator_agent  # Accept translator_agent as a dependency
+
     def run(self, articles):
         print("🚀 Posting to WordPress (drafts under Panduan category)...")
         print(f"[DEBUG] WP_URL: {WP_URL}")
@@ -26,13 +30,10 @@ class WordPressAgent(BaseAgent):
         # 🔐 Quick credential check
         self._test_wp_auth()
 
-        # Instantiate TranslatorAgent
-        translator_agent = TranslatorAgent()
-
         posted_count = 0
         for article in articles:
             # First, translate the title and content
-            translated_articles = translator_agent.run([article])
+            translated_articles = self.translator_agent.run([article])  # Use the passed translator agent
             translated_article = translated_articles[0]  # Since we passed a list of 1 article
 
             translated_title = translated_article.get("translated_title", translated_article.get("title"))
