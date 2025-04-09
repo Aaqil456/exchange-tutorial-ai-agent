@@ -1,27 +1,30 @@
 from crewai import Agent
 import undetected_chromedriver as uc
 from bs4 import BeautifulSoup
+import time
 
 class ScraperAgent(Agent):
     def run(self):
-        BASE_URL = "https://explore.hata.io/"
-        print("Scraping articles...")
+        BASE_URL = "https://explore.hata.io"
+        print("Scraping articles from Hata Learn...")
 
-        # Step 1: Get the list of article links
+        # Step 1: Get article links
         options_main = uc.ChromeOptions()
         options_main.add_argument('--headless')
         options_main.add_argument('--no-sandbox')
         options_main.add_argument('--disable-dev-shm-usage')
-        driver = uc.Chrome(options=options_main, version_main=134)  # ✅ Force version compatibility
+        driver = uc.Chrome(options=options_main, version_main=134)
 
         driver.get(f"{BASE_URL}/learn")
+        time.sleep(5)  # ⏳ Let React load articles
         soup = BeautifulSoup(driver.page_source, "html.parser")
         driver.quit()
 
         links = []
         for a in soup.select('a[href^="/learn/"]'):
-            full_link = BASE_URL + a.get('href')
-            if full_link not in links and "trading-guide" not in full_link:
+            href = a.get('href')
+            full_link = BASE_URL + href
+            if full_link not in links and href.count("/") == 2:  # filter only main articles
                 links.append(full_link)
 
         print(f"✅ Found {len(links)} articles.")
@@ -29,23 +32,24 @@ class ScraperAgent(Agent):
         # Step 2: Scrape each article
         articles = []
         for idx, link in enumerate(links):
-            print(f"🔎 Scraping article {idx+1}/{len(links)}: {link}")
+            print(f"🔎 Scraping article {idx + 1}/{len(links)}: {link}")
 
-            # Fresh ChromeOptions object for each driver session
             options = uc.ChromeOptions()
             options.add_argument('--headless')
             options.add_argument('--no-sandbox')
             options.add_argument('--disable-dev-shm-usage')
-            driver = uc.Chrome(options=options, version_main=134)  # ✅ Force version compatibility again
+            driver = uc.Chrome(options=options, version_main=134)
 
             driver.get(link)
+            time.sleep(5)  # ⏳ Let full content render
             page_soup = BeautifulSoup(driver.page_source, "html.parser")
             driver.quit()
 
-            title = page_soup.find("h1").text.strip()
-            content_blocks = []
+            # Extract title
+            title_tag = page_soup.find("h1")
+            title = title_tag.get_text(strip=True) if title_tag else "No title found"
 
-            # Extract structured content in order (including <span> and <img>)
+            content_blocks = []
             for elem in page_soup.find_all(['h2', 'h3', 'p', 'ul', 'blockquote', 'pre', 'span', 'img']):
                 if elem.name in ['h2', 'h3']:
                     content_blocks.append(f"<h2>{elem.get_text(strip=True)}</h2>")
