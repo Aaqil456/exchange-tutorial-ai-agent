@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup
 
 class ScraperAgent(Agent):
     def run(self):
-        BASE_URL = "https://www.mexc.co"
+        BASE_URL = "https://explore.hata.io/"
         print("Scraping articles...")
 
         # Step 1: Get the list of article links
@@ -14,7 +14,7 @@ class ScraperAgent(Agent):
         options_main.add_argument('--disable-dev-shm-usage')
         driver = uc.Chrome(options=options_main, version_main=134)  # ✅ Force version compatibility
 
-        driver.get(f"{BASE_URL}/learn/trading-guide")
+        driver.get(f"{BASE_URL}/learn")
         soup = BeautifulSoup(driver.page_source, "html.parser")
         driver.quit()
 
