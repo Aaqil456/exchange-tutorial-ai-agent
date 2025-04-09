@@ -2,11 +2,15 @@ from crewai import Agent
 import undetected_chromedriver as uc
 from bs4 import BeautifulSoup
 import time
+import logging
+
+# Set up logging to print detailed debug information
+logging.basicConfig(level=logging.DEBUG, format="%(asctime)s [%(levelname)s] %(message)s")
 
 class ScraperAgent(Agent):
     def run(self):
         BASE_URL = "https://hata.freshdesk.com/"
-        print("Scraping articles from Hata Learn...")
+        logging.info("Scraping articles from Hata Learn...")
 
         # Step 1: Launch browser and load /learn page
         options_main = uc.ChromeOptions()
@@ -22,33 +26,41 @@ class ScraperAgent(Agent):
         # Scroll to bottom to trigger lazy-loading
         scroll_pause_time = 2
         last_height = driver.execute_script("return document.body.scrollHeight")
+        logging.debug(f"DEBUG: Initial page height: {last_height}")
 
-        for _ in range(4):  # You can increase if needed
+        for _ in range(4):  # You can increase this if needed
             driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
             time.sleep(scroll_pause_time)
             new_height = driver.execute_script("return document.body.scrollHeight")
+            logging.debug(f"DEBUG: New page height after scroll: {new_height}")
             if new_height == last_height:
+                logging.info("DEBUG: No new content loaded after scroll.")
                 break
             last_height = new_height
 
-        # Parse final loaded HTML
-        soup = BeautifulSoup(driver.page_source, "html.parser")
+        # Step 2: Parse final loaded HTML
+        page_source = driver.page_source
+        logging.debug(f"DEBUG: Page source snippet: {page_source[:2000]}")  # Print the first 2000 characters
+        soup = BeautifulSoup(page_source, "html.parser")
         driver.quit()
 
-        # Step 2: Collect all valid article links
+        # Step 3: Collect all valid article links
         links = []
-        for a in soup.select('a[href^="/learn/"]'):
-            href = a.get('href')
+        links_elements = soup.select('a[href^="/learn/"]')
+        logging.debug(f"DEBUG: Found {len(links_elements)} links matching 'a[href^=\"/learn/\"]'.")
+
+        for elem in links_elements:
+            href = elem.get('href')
             full_link = BASE_URL + href
             if full_link not in links and "/learn/" in href and href.count("/") == 2:  # Avoid nested routes or duplicates
                 links.append(full_link)
 
-        print(f"✅ Found {len(links)} articles.")
+        logging.info(f"✅ Found {len(links)} articles.")
 
-        # Step 3: Scrape each article
+        # Step 4: Scrape each article
         articles = []
         for idx, link in enumerate(links):
-            print(f"🔎 Scraping article {idx+1}/{len(links)}: {link}")
+            logging.info(f"🔎 Scraping article {idx+1}/{len(links)}: {link}")
 
             options = uc.ChromeOptions()
             options.add_argument('--headless')
@@ -63,6 +75,8 @@ class ScraperAgent(Agent):
 
             title_tag = page_soup.find("h1")
             title = title_tag.text.strip() if title_tag else "No title found"
+            logging.debug(f"DEBUG: Article title: {title}")
+            
             content_blocks = []
 
             # Extract structured tutorial content
@@ -95,5 +109,5 @@ class ScraperAgent(Agent):
                 "content": "".join(content_blocks)
             })
 
-        print(f"✅ Scraping completed. Total articles scraped: {len(articles)}")
+        logging.info(f"✅ Scraping completed. Total articles scraped: {len(articles)}")
         return articles
