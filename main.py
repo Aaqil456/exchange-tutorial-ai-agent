@@ -90,8 +90,8 @@ def main():
         print("Validating final output...")
         final_validated = validator.run(rendered_articles)
 
-        print("Posting to WordPress as drafts...")
-        wordpress.run(final_validated)  # ✅ Moved here after validation
+        #print("Posting to WordPress as drafts...")
+        #wordpress.run(final_validated)  # ✅ Moved here after validation
 
         print("Saving to JSON...")
         saver.run(final_validated)
