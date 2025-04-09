@@ -20,7 +20,7 @@ class ScraperAgent(Agent):
 
         driver = uc.Chrome(options=options_main, version_main=134)  # ✅ Version locked
 
-        driver.get(f"{BASE_URL}/support/solutions")
+        driver.get(f"{BASE_URL}/support/solutions/articles/150000197257-how-do-i-create-a-passkey-for-my-hata-account-")
         time.sleep(3)  # ⏳ Initial delay
 
         # Scroll to bottom to trigger lazy-loading
