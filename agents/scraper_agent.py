@@ -5,7 +5,7 @@ import time
 
 class ScraperAgent(Agent):
     def run(self):
-        BASE_URL = "https://explore.hata.io"
+        BASE_URL = "https://hata.freshdesk.com/"
         print("Scraping articles from Hata Learn...")
 
         # Step 1: Launch browser and load /learn page
@@ -16,7 +16,7 @@ class ScraperAgent(Agent):
 
         driver = uc.Chrome(options=options_main, version_main=134)  # ✅ Version locked
 
-        driver.get(f"{BASE_URL}/learn")
+        driver.get(f"{BASE_URL}/support/solutions")
         time.sleep(3)  # ⏳ Initial delay
 
         # Scroll to bottom to trigger lazy-loading
