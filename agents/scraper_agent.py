@@ -15,7 +15,7 @@ class ScraperAgent(Agent):
         options_main.add_argument('--disable-dev-shm-usage')
         driver = uc.Chrome(options=options_main, version_main=134)
 
-        driver.get(f"{BASE_URL}/learn")
+        driver.get(f"{BASE_URL}/what-is-crypto-market-volatility")
         time.sleep(5)  # ⏳ Let React load articles
         soup = BeautifulSoup(driver.page_source, "html.parser")
         driver.quit()
