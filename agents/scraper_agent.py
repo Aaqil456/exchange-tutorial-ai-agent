@@ -12,29 +12,35 @@ logging.basicConfig(level=logging.DEBUG)
 
 class ScraperAgent(Agent):
     def run(self):
-        BASE_URL = "https://hata.freshdesk.com/"
+        BASE_URL = "https://hata.freshdesk.com"
         logging.info("Scraping articles from Hata Learn...")
 
-        # Step 1: Launch browser and load /learn page
+        # Step 1: Launch browser and load /support/solutions page
         options_main = uc.ChromeOptions()
-        options_main.add_argument('--headless')  # Set this back to False if you want to see the browser
+        options_main.add_argument('--headless=new')
         options_main.add_argument('--no-sandbox')
         options_main.add_argument('--disable-dev-shm-usage')
 
-        driver = uc.Chrome(options=options_main, version_main=134)  # ✅ Version locked
+        driver = uc.Chrome(options=options_main, version_main=134)
         driver.get(f"{BASE_URL}/support/solutions")
-        time.sleep(3)  # ⏳ Initial delay
+        time.sleep(3)
 
-        # Wait for the page to load
-        WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.CSS_SELECTOR, 'div#solutions-list'))
-        )
+        try:
+            WebDriverWait(driver, 15).until(
+                EC.presence_of_element_located((By.CSS_SELECTOR, 'div.solution-category'))
+            )
+        except Exception as e:
+            logging.error("❌ Element 'div.solution-category' not found. Saving HTML for debugging.")
+            with open("debug_hata_page.html", "w", encoding="utf-8") as f:
+                f.write(driver.page_source)
+            driver.quit()
+            raise e
 
         # Scroll to bottom to trigger lazy-loading
         scroll_pause_time = 2
         last_height = driver.execute_script("return document.body.scrollHeight")
 
-        for _ in range(4):  # You can increase this if needed
+        for _ in range(4):
             driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
             time.sleep(scroll_pause_time)
             new_height = driver.execute_script("return document.body.scrollHeight")
@@ -42,22 +48,17 @@ class ScraperAgent(Agent):
                 break
             last_height = new_height
 
-        # Debug: Check page source
-        logging.debug(f"Page Source: {driver.page_source[:500]}")  # Log first 500 characters
-
-        # Parse final loaded HTML
         soup = BeautifulSoup(driver.page_source, "html.parser")
         driver.quit()
 
         # Step 2: Collect all valid article links
         links = []
-        for a in soup.select('a[href^="/learn/"]'):
+        for a in soup.select('a[href^="/support/solutions/articles/"]'):
             href = a.get('href')
             full_link = BASE_URL + href
-            if full_link not in links and "/learn/" in href and href.count("/") == 2:  # Avoid nested routes or duplicates
+            if full_link not in links:
                 links.append(full_link)
 
-        # Debug: Log found links
         logging.debug(f"Links found: {links}")
         logging.info(f"✅ Found {len(links)} articles.")
 
@@ -67,19 +68,23 @@ class ScraperAgent(Agent):
             logging.info(f"🔎 Scraping article {idx+1}/{len(links)}: {link}")
 
             options = uc.ChromeOptions()
-            options.add_argument('--headless')
+            options.add_argument('--headless=new')
             options.add_argument('--no-sandbox')
             options.add_argument('--disable-dev-shm-usage')
 
             driver = uc.Chrome(options=options, version_main=134)
             driver.get(link)
 
-            # Wait for the article content to load
-            WebDriverWait(driver, 10).until(
-                EC.presence_of_element_located((By.CSS_SELECTOR, 'div.article-content'))
-            )
+            try:
+                WebDriverWait(driver, 10).until(
+                    EC.presence_of_element_located((By.CSS_SELECTOR, 'div.article-content'))
+                )
+            except Exception as e:
+                logging.warning(f"⚠️ Article content not found at {link}")
+                driver.quit()
+                continue
 
-            time.sleep(2)  # Optional delay to ensure full render
+            time.sleep(2)
             page_soup = BeautifulSoup(driver.page_source, "html.parser")
             driver.quit()
 
@@ -87,7 +92,6 @@ class ScraperAgent(Agent):
             title = title_tag.text.strip() if title_tag else "No title found"
             content_blocks = []
 
-            # Extract structured tutorial content
             for elem in page_soup.find_all(['h2', 'h3', 'p', 'ul', 'blockquote', 'pre', 'span', 'img']):
                 if elem.name in ['h2', 'h3']:
                     content_blocks.append(f"<h2>{elem.get_text(strip=True)}</h2>")
@@ -110,9 +114,6 @@ class ScraperAgent(Agent):
                         if src.startswith('/'):
                             src = BASE_URL + src
                         content_blocks.append(f'<img src="{src}" alt="tutorial image" />')
-
-            # Debug: Log extracted content
-            logging.debug(f"Extracted content: {content_blocks[:5]}")  # Log first 5 blocks
 
             articles.append({
                 "url": link,
