@@ -27,10 +27,10 @@ class ScraperAgent(Agent):
 
         try:
             WebDriverWait(driver, 15).until(
-                EC.presence_of_element_located((By.CSS_SELECTOR, 'div.solution-category'))
+                EC.presence_of_element_located((By.CSS_SELECTOR, 'div.col-md-6.fw-folder'))
             )
         except Exception as e:
-            logging.error("❌ Element 'div.solution-category' not found. Saving HTML for debugging.")
+            logging.error("❌ Element 'div.col-md-6.fw-folder' not found. Saving HTML for debugging.")
             with open("debug_hata_page.html", "w", encoding="utf-8") as f:
                 f.write(driver.page_source)
             driver.quit()
