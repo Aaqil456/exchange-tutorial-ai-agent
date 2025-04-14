@@ -43,6 +43,9 @@ class TranslatorAgent(BaseAgent):
             for attempt in range(3):
                 try:
                     response = requests.post(gemini_url, headers=headers, json=title_payload)
+                    print("🌐 Gemini API Status:", response.status_code)
+                    print("🌐 Gemini API Response:", response.text[:300])
+
                     if response.status_code == 200:
                         translated_title = (
                             response.json()
@@ -87,6 +90,9 @@ class TranslatorAgent(BaseAgent):
             for attempt in range(3):
                 try:
                     response = requests.post(gemini_url, headers=headers, json=content_payload)
+                    print("🌐 Gemini API Status:", response.status_code)
+                    print("🌐 Gemini API Response:", response.text[:300])
+
                     if response.status_code == 200:
                         translated_content = (
                             response.json()
