@@ -76,7 +76,7 @@ def main():
         translated_articles = translator.run(validated_articles)
 
         print("Rendering articles into final HTML...")
-        rendered_articles = renderer.run(formatted_articles)
+        rendered_articles = renderer.run(translated_articles)
 
         print("Validating final output...")
         final_validated = validator.run(rendered_articles)
