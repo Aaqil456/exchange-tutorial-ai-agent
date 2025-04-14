@@ -86,7 +86,11 @@ def main():
 
         print("Saving to JSON...")
         saver.run(final_validated)
-
+        print("✅ Translated Articles:")
+        for a in translated_articles:
+            print("Title:", a.get("translated_title"))
+            print("Content preview:", a.get("translated_html")[:200])
+            
         print("✅ Process completed successfully!")
 
     except Exception as e:
