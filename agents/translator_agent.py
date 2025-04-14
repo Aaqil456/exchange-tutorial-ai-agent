@@ -9,6 +9,8 @@ class TranslatorAgent(BaseAgent):
 
     def run(self, articles):
         GOOGLE_API_KEY = os.getenv("GEMINI_API_KEY")
+        print("🔑 GEMINI_API_KEY status:", "✅ OK" if GOOGLE_API_KEY else "❌ MISSING")
+
 
         if not GOOGLE_API_KEY:
             print("❌ GEMINI_API_KEY is not set. Translation will fail.")
