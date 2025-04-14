@@ -7,7 +7,6 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from agents.scraper_agent import ScraperAgent
 from agents.image_validator import ImageValidator
 from agents.translator_agent import TranslatorAgent
-from agents.formatter_agent import FormatterAgent
 from agents.validator_agent import ValidatorAgent
 from agents.saver_agent import SaverAgent
 from agents.render_agent import RenderAgent
@@ -35,12 +34,7 @@ def main():
         backstory="You are a careful translator that preserves structure and converts only text."
     )
 
-    # Agent: Formatter
-    formatter = FormatterAgent(
-        role="Formatter",
-        goal="Format the translated content into a professional tutorial layout.",
-        backstory="You ensure everything looks beautiful, with clear headings, images, and structure."
-    )
+
 
     # Agent: Render Agent
     renderer = RenderAgent(
@@ -80,9 +74,6 @@ def main():
 
         print("Translating articles...")
         translated_articles = translator.run(validated_articles)
-
-        print("Formatting articles...")
-        formatted_articles = formatter.run(translated_articles)
 
         print("Rendering articles into final HTML...")
         rendered_articles = renderer.run(formatted_articles)
