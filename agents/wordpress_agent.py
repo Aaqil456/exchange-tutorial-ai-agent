@@ -84,6 +84,7 @@ class WordPressAgent(BaseAgent):
             f"{image_html}"
             f"{content}"
             f"<p>📌 Baca artikel asal di sini: <a href='{original_url}'>{original_url}</a></p>"
+            f"<p>📌 Berdagang dengan Mexc di sini: <a href='https://www.mexc.co/register?inviteCode=mexc-bicarak'>https://www.mexc.co/register?inviteCode=mexc-bicarak</a></p>"
         )
 
         post_data = {
