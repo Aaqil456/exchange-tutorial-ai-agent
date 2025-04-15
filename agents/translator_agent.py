@@ -25,7 +25,7 @@ class TranslatorAgent(BaseAgent):
             # --- Translate Title ---
             title_prompt = (
                 "Translate the following title into Malay (Bahasa Malaysia)  and make it SEO optimized article.\n"
-                "Only return the translated text without any explanation.\n"
+                "Only return the translated text without any explanation. Maintain crypto and trading topic related word in english in double quotes\n"
                 "Use natural, conversational, friendly Malaysian Malay — like how a friend shares info.\n"
                 "Keep it simple, relaxed, and easy to understand.\n"
                 "Avoid using exaggerated slang words or interjections.\n"
@@ -63,7 +63,7 @@ class TranslatorAgent(BaseAgent):
             # --- Translate Content ---
             content_prompt = (
                 "Translate the following tutorial content into Malay (Bahasa Malaysia). and make it SEO optimized article\n"
-                "Only return the translated text without any explanation.\n"
+                "Only return the translated text without any explanation. Maintain crypto and trading topic related word in english in double quotes\n"
                 "Use natural, conversational, friendly Malaysian Malay — like how a friend shares info.\n"
                 "Keep it simple, relaxed, and easy to understand.\n"
                 "Avoid exaggerated slang, emojis, or shouting.\n"
