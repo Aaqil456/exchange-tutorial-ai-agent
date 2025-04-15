@@ -8,9 +8,8 @@ import time
 
 class ScraperAgent(Agent):
     def run(self, *args, **kwargs):
-        BASE_URL = "https://hata.freshdesk.com"
-        ARTICLE_URL = f"{BASE_URL}/support/solutions/articles/150000203699-common-cryptocurrency-scams"
-
+        BASE_URL = "https://www.mexc.co"
+        ARTICLE_URL = f"{BASE_URL}/learn/trading-guide?page=2"
         options = uc.ChromeOptions()
         options.add_argument('--headless=new')
         options.add_argument('--no-sandbox')
