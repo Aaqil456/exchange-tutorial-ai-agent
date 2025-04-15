@@ -63,7 +63,7 @@ def main():
       #  goal="Post articles to WordPress as drafts under the Panduan category.",
        # backstory="You help publish tutorials to WordPress in an organized, safe manner.",
         #translator_agent=translator  # Pass the existing TranslatorAgent
-    )
+    #)
 
     try:
         print("Scraping articles...")
