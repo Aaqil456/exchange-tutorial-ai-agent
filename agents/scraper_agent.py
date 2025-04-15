@@ -48,7 +48,7 @@ class ScraperAgent(Agent):
                 content_div = article_soup.select_one('.article-detail-container')
                 content_blocks = []
 
-                for elem in content_div.find_all(['h2', 'h3', 'p', 'ul', 'li', 'img']):
+                for elem in content_div.find_all(['h2', 'h3', 'p', 'ul', 'li', 'img','span']):
                     if elem.name in ['h2', 'h3']:
                         content_blocks.append(f"<h2>{elem.get_text(strip=True)}</h2>")
                     elif elem.name == 'p':
