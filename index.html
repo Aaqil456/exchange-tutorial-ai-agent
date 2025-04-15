@@ -1,60 +1,70 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>MEXC Translated Tutorials</title>
-    <style>
-        body {
-            background-color: #121212;
-            color: #ffffff;
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-            margin: 20px;
-        }
-        h1, h2, h3 {
-            color: #03dac6;
-        }
-        p {
-            margin-bottom: 1em;
-        }
-        img {
-            max-width: 100%;
-            margin: 20px 0;
-            border: 1px solid #444;
-        }
-        .article {
-            margin-bottom: 60px;
-            border-bottom: 1px solid #333;
-            padding-bottom: 40px;
-        }
-        a {
-            color: #8ab4f8;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>MEXC Translated Tutorials</title>
+  <style>
+    body {
+      background-color: #121212;
+      color: #ffffff;
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      margin: 20px;
+    }
+    h1, h2, h3 {
+      color: #03dac6;
+    }
+    p {
+      margin-bottom: 1em;
+    }
+    img {
+      max-width: 100%;
+      margin: 20px 0;
+      border: 1px solid #444;
+    }
+    .article {
+      margin-bottom: 60px;
+      border-bottom: 1px solid #333;
+      padding-bottom: 40px;
+    }
+    a {
+      color: #8ab4f8;
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+  </style>
 </head>
 <body>
-    <h1>Translated MEXC Tutorials (Exchange Tutorial AI Agent)</h1>
-    <div id="content"></div>
+  <h1>Translated MEXC Tutorials (Exchange Tutorial AI Agent)</h1>
+  <div id="content"></div>
 
-    <script>
-        fetch('mexc_translated_articles.json')
-            .then(response => response.json())
-            .then(data => {
-                const contentDiv = document.getElementById('content');
-                data.articles.forEach(article => {
-                    const articleDiv = document.createElement('div');
-                    articleDiv.classList.add('article');
-                    articleDiv.innerHTML = `
-                        <h2>${article.title}</h2>
-                        <p><a href="${article.url}" target="_blank">Original Article Link</a></p>
-                        ${article.final_html}
-                    `;
-                    contentDiv.appendChild(articleDiv);
-                });
-            })
-            .catch(error => {
-                console.error('Error loading JSON:', error);
-            });
-    </script>
+  <script>
+    fetch('translated_articles.json')
+      .then(response => response.json())
+      .then(data => {
+        const contentDiv = document.getElementById('content');
+        if (!data.articles || data.articles.length === 0) {
+          contentDiv.innerHTML = '<p>No articles found.</p>';
+          return;
+        }
+
+        data.articles.forEach(article => {
+          const articleDiv = document.createElement('div');
+          articleDiv.classList.add('article');
+          articleDiv.innerHTML = `
+            <h2>${article.translated_title || article.title}</h2>
+            <p><a href="${article.url}" target="_blank">Original Article Link</a></p>
+            ${article.final_html || article.translated_html || ''}
+          `;
+          contentDiv.appendChild(articleDiv);
+        });
+      })
+      .catch(error => {
+        console.error('Error loading JSON:', error);
+        document.getElementById('content').innerHTML = '<p style="color: red;">Failed to load articles.</p>';
+      });
+  </script>
 </body>
 </html>
