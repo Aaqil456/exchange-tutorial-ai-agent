@@ -15,7 +15,7 @@ class TranslatorAgent(BaseAgent):
             print("❌ Translation skipped. No API key found.")
             return articles
 
-        gemini_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={GOOGLE_API_KEY}"
+        gemini_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={GOOGLE_API_KEY}"
         headers = {"Content-Type": "application/json"}
         translated_articles = []
 
