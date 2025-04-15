@@ -57,13 +57,13 @@ def main():
         backstory="You safely store the final tutorial collection for publishing."
     )
 
-    # Agent: WordPress Publisher
-   # wordpress = WordPressAgent(
-        #role="WordPress Publisher",
-       # goal="Post articles to WordPress as drafts under the Panduan category.",
-       # backstory="You help publish tutorials to WordPress in an organized, safe manner.",
-       # translator_agent=translator  # Pass the existing TranslatorAgent
-   # )
+    #Agent: WordPress Publisher
+    wordpress = WordPressAgent(
+        role="WordPress Publisher",
+        goal="Post articles to WordPress as drafts under the Panduan category.",
+        backstory="You help publish tutorials to WordPress in an organized, safe manner.",
+        translator_agent=translator  # Pass the existing TranslatorAgent
+    )
 
     try:
         print("Scraping articles...")
@@ -81,8 +81,8 @@ def main():
         print("Validating final output...")
         final_validated = validator.run(rendered_articles)
 
-        #print("Posting to WordPress as drafts...")
-        #wordpress.run(final_validated)  # ✅ Moved here after validation
+        print("Posting to WordPress as drafts...")
+        wordpress.run(final_validated)  # ✅ Moved here after validation
 
         print("Saving to JSON...")
         saver.run(final_validated)
