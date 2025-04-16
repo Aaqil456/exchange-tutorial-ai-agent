@@ -75,27 +75,34 @@ class TranslatorAgent(BaseAgent):
             #)
 
                         # --- Translate Content ---
-                content_prompt = (
-                    "Translate and rewrite the following HTML tutorial article from English to Bahasa Malaysia.\n\n"
-                    "Your goal is to create a SEO-optimized, blog-style Bahasa Malaysia article suitable for Malaysian readers.\n\n"
-                    "DO the following:\n"
-                    "1. Translate all paragraph content into natural, fluent Bahasa Malaysia — make it sound like a real Malaysian crypto educator.\n"
-                    "2. Use informal but professional tone (not textbook or robotic).\n"
-                    "3. Retain the HTML structure, including <h1>, <h2>, <p>, <ul>, <ol>, <li>, <img>. Do NOT modify or translate anything inside <img> tags.\n"
-                    "4. Keep all crypto and trading terms (e.g., futures, wallet, margin, liquidation) in English inside double quotes.\n"
-                    "5. Then highlight those double-quoted terms by wrapping them with <strong>. Example: <strong>\"wallet\"</strong>.\n"
-                    "6. Break long paragraphs into shorter ones for better readability.\n"
-                    "7. Avoid repeating phrases — write concisely but clearly.\n"
-                    "8. Translate into Bahasa Malaysia — NOT Bahasa Indonesia. Use 'anda', 'modal', 'untung', 'kerugian', 'dagangan', etc.\n"
-                    "9. At the end of the article, add a <h2> section titled 'Kesimpulan', and summarize the key points in 2–4 bullet points using <ul><li>.\n\n"
-                    "DO NOT:\n"
-                    "- Do not return explanation or metadata.\n"
-                    "- Do not use Bahasa Indonesia.\n"
-                    "- Do not use repetitive corporate tones or salesy lines.\n\n"
-                    "Use the following article as a style and tone reference. Match its voice, structure, and clarity:\n\n"
-                    "Now translate and rewrite the following article:\n\n"
-                    f"{article['content']}"
-                )
+            content_prompt = (
+                "Translate and rewrite the following HTML tutorial article from English to Bahasa Malaysia.\n\n"
+                "Your goal is to create a SEO-optimized, blog-style Bahasa Malaysia article suitable for Malaysian readers.\n\n"
+                "DO the following:\n"
+                "1. Translate all paragraph content into natural, fluent Bahasa Malaysia — make it sound like a real Malaysian crypto educator.\n"
+                "2. Use informal but professional tone (not textbook or robotic).\n"
+                "3. Retain the HTML structure, including <h1>, <h2>, <p>, <ul>, <ol>, <li>, <img>. Do NOT modify or translate anything inside <img> tags.\n"
+                "4. Keep all crypto and trading terms (e.g., futures, wallet, margin, liquidation) in English inside double quotes.\n"
+                "5. Then highlight those double-quoted terms by wrapping them with <strong>. Example: <strong>\"wallet\"</strong>.\n"
+                "6. Break long paragraphs into shorter ones for better readability.\n"
+                "7. Avoid repeating phrases — write concisely but clearly.\n"
+                "8. Translate into Bahasa Malaysia — NOT Bahasa Indonesia. Use 'anda', 'modal', 'untung', 'kerugian', 'dagangan', etc.\n\n"
+                "At the end of the article, write a short 1-paragraph conclusion (max 280 characters) in Bahasa Malaysia.\n"
+                "The conclusion should:\n"
+                "- Be written like a general observation or takeaway, NOT as a news source or formal summary.\n"
+                "- Use a natural, conversational, friendly Malaysian tone — like a friend sharing info.\n"
+                "- Be simple, relaxed, clean, and easy to understand.\n"
+                "- Avoid slang like 'Eh', 'Woi', 'Wooo', or excited interjections.\n"
+                "- Do NOT use 'Kesimpulan:', 'Translation:', 'Terjemahan:', or any kind of heading.\n"
+                "- Do NOT add emojis (unless present in original).\n"
+                "- Do NOT use shouty words or hype.\n"
+                "- Use natural keywords from the topic to improve SEO.\n"
+                "- Keep it concise, clear, and relevant.\n\n"
+                
+                "Now translate and rewrite the following article:\n\n"
+                f"{article['content']}"
+            )
+
 
                         
             content_payload = {"contents": [{"parts": [{"text": content_prompt}]}]}
