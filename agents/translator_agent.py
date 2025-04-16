@@ -99,7 +99,6 @@ class TranslatorAgent(BaseAgent):
                 "- Use natural keywords from the topic to improve SEO.\n"
                 "- Keep it concise, clear, and relevant.\n\n"
                 "Use the following article as a style and tone reference. Match its voice, structure, and clarity:\n\n"
-                f"{example_article}\n\n"
                 "Now translate and rewrite the following article:\n\n"
                 f"{article['content']}"
             )
