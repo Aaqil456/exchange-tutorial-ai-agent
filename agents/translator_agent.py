@@ -75,13 +75,19 @@ class TranslatorAgent(BaseAgent):
                         # --- Translate Content ---
             content_prompt = (
                 "Translate and restructure the following tutorial article from English to Bahasa Malaysia.\n"
-                "Preserve the original HTML structure, including all tags such as <h1>, <h2>, <p>, <ul>, <ol>, <li>, and <img>.\n"
-                "Do NOT translate any content inside <img> tags, including filenames and alt text.\n"
-                "Retain all crypto and trading-related terms in English, and enclose them in double quotes (e.g., \"futures\", \"wallet\", \"liquidation\").\n"
-                "Then, highlight these double-quoted terms by wrapping them in <strong> tags for bold formatting — e.g., <strong>\"wallet\"</strong>.\n"
-                "Restructure the content to be SEO friendly by using clear headings, proper paragraph breaks, and concise, non-repetitive language.\n"
-                "Do NOT include any explanations, comments, or extra notes — only return the translated and formatted HTML content.\n"
-                "At the end of the article, add a short summary in Bahasa Malaysia under a <h2> heading titled 'Kesimpulan', highlighting the key points in 2–4 bullet points.\n\n"
+                "\n"
+                "1. Preserve the original HTML structure, including tags such as <h1>, <h2>, <h3>, <p>, <ul>, <ol>, <li>, and <img>.\n"
+                "2. Do NOT translate anything inside <img> tags (including alt text, src, and filenames).\n"
+                "3. Retain all crypto and trading-related terms (such as wallet, futures, margin, liquidation, leverage, trader, etc.) in English, and enclose them in double quotes.\n"
+                "4. Then highlight these double-quoted terms using <strong> tags. For example: <strong>\"wallet\"</strong>.\n"
+                "5. Make the output SEO friendly by restructuring the content with:\n"
+                "   - Clear and keyword-based headings.\n"
+                "   - Short and well-spaced paragraphs.\n"
+                "   - Avoidance of repetitive or robotic language.\n"
+                "   - Use of lists or bullets where appropriate.\n"
+                "6. Return only the translated and structured HTML content. Do not include any explanation or metadata.\n"
+                "7. At the end of the article, add a new <h2> section titled 'Kesimpulan', followed by a 2–4 point summary in bullet list format (in Bahasa Malaysia) to highlight key takeaways from the article.\n"
+                "\n"
                 f"{article['content']}"
             )
                         
