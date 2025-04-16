@@ -74,16 +74,17 @@ class TranslatorAgent(BaseAgent):
 
                         # --- Translate Content ---
             content_prompt = (
-                "Translate and resturcture the whole following tutorial article from English to Bahasa Malaysia. "
-                "Preserve the original HTML structure including all tags such as <h1>, <h2>, <p>, <ul>, <ol>, and <img>. "
-                "Do NOT translate any content inside <img> tags. "
-                "Retain all crypto and trading-related terms in English, and enclose them in double quotes."
-                "Restructure the content output SEO friendly by using clear headings, proper paragraph breaks, and concise, non-repetitive language."
-                "Do not include any explanation or extra notes—only return the translated and formatted HTML content. "
+                "Translate and restructure the following tutorial article from English to Bahasa Malaysia.\n"
+                "Preserve the original HTML structure, including all tags such as <h1>, <h2>, <p>, <ul>, <ol>, <li>, and <img>.\n"
+                "Do NOT translate any content inside <img> tags, including filenames and alt text.\n"
+                "Retain all crypto and trading-related terms in English, and enclose them in double quotes (e.g., \"futures\", \"wallet\", \"liquidation\").\n"
+                "Then, highlight these double-quoted terms by wrapping them in <strong> tags for bold formatting — e.g., <strong>\"wallet\"</strong>.\n"
+                "Restructure the content to be SEO friendly by using clear headings, proper paragraph breaks, and concise, non-repetitive language.\n"
+                "Do NOT include any explanations, comments, or extra notes — only return the translated and formatted HTML content.\n"
                 "At the end of the article, add a short summary in Bahasa Malaysia under a <h2> heading titled 'Kesimpulan', highlighting the key points in 2–4 bullet points.\n\n"
                 f"{article['content']}"
             )
-            
+                        
             content_payload = {"contents": [{"parts": [{"text": content_prompt}]}]}
             translated_content = ""
 
