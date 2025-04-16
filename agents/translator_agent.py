@@ -86,23 +86,16 @@ class TranslatorAgent(BaseAgent):
                 "5. Then highlight those double-quoted terms by wrapping them with <strong>. Example: <strong>\"wallet\"</strong>.\n"
                 "6. Break long paragraphs into shorter ones for better readability.\n"
                 "7. Avoid repeating phrases — write concisely but clearly.\n"
-                "8. Translate into Bahasa Malaysia — NOT Bahasa Indonesia. Use 'anda', 'modal', 'untung', 'kerugian', 'dagangan', etc.\n\n"
-                "At the end of the article, write a short 1-paragraph conclusion (max 280 characters) in Bahasa Malaysia.\n"
-                "The conclusion should:\n"
-                "- Be written like a general observation or takeaway, NOT as a news source or formal summary.\n"
-                "- Use a natural, conversational, friendly Malaysian tone — like a friend sharing info.\n"
-                "- Be simple, relaxed, clean, and easy to understand.\n"
-                "- Avoid slang like 'Eh', 'Woi', 'Wooo', or excited interjections.\n"
-                "- Do NOT use 'Kesimpulan:', 'Translation:', 'Terjemahan:', or any kind of heading.\n"
-                "- Do NOT add emojis (unless present in original).\n"
-                "- Do NOT use shouty words or hype.\n"
-                "- Use natural keywords from the topic to improve SEO.\n"
-                "- Keep it concise, clear, and relevant.\n\n"
-                
-                "Now translate and rewrite the following article:\n\n"
+                "8. Translate into Bahasa Malaysia — NOT Bahasa Indonesia. Use 'anda', 'modal', 'untung', 'kerugian', 'dagangan', etc.\n"
+                "9. At the end of the article, add a <h2> section titled 'Kesimpulan', and summarize the key points in 2–4 bullet points using <ul><li>.\n"
+                "\n"
+                "DO NOT:\n"
+                "- Do not return explanation or metadata.\n"
+                "- Do not use Bahasa Indonesia.\n"
+                "- Do not use repetitive corporate tones or salesy lines.\n"
+                "\n"
                 f"{article['content']}"
             )
-
 
                         
             content_payload = {"contents": [{"parts": [{"text": content_prompt}]}]}
