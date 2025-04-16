@@ -24,9 +24,8 @@ class TranslatorAgent(BaseAgent):
 
             # --- Translate Title ---
             title_prompt = (
-                "Translate the following title into Malay (Bahasa Malaysia) and make it SEO optimized title without changing the meaning.\n"
+                "Translate the following title into Malay (Bahasa Malaysia).\n"
                 "Only return the translated text without any explanation. Maintain crypto and trading topic related word in english in double quotes\n"
-                "Use natural, conversational, friendly Malaysian Malay — like how a friend shares info.\n"
                 "Keep it simple, relaxed, and easy to understand.\n"
                 "Avoid using exaggerated slang words or interjections.\n"
                 "Do not translate brand names or product names.\n\n"
@@ -73,6 +72,7 @@ class TranslatorAgent(BaseAgent):
                 "6. Break long paragraphs into shorter ones for better readability.\n"
                 "7. Avoid repeating phrases — write concisely but clearly.\n"
                 "8. Translate into Bahasa Malaysia — NOT Bahasa Indonesia. Use 'anda', 'modal', 'untung', 'kerugian', 'dagangan', etc.\n\n"
+                "9. As for the SEO make sure follow the correct heading structure.\n"
                 "At the end of the article, write a short 1-paragraph conclusion (max 280 characters) in Bahasa Malaysia.\n"
                 "The conclusion should:\n"
                 "- Be written like a general observation or takeaway, NOT as a news source or formal summary.\n"
