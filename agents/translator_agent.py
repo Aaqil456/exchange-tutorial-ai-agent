@@ -74,8 +74,8 @@ class TranslatorAgent(BaseAgent):
             #    f"{article['content']}"
             #)
 
-                # --- Translate Content ---
-                content_prompt = (
+            # --- Translate Content ---
+             content_prompt = (
                 "Translate and convert the following HTML tutorial article from English to Bahasa Malaysia in a blog post.\n\n"
                 "Your goal is to create a SEO-optimized, blog-style Bahasa Malaysia article suitable for Malaysian readers.\n\n"
                 "DO the following:\n"
@@ -101,7 +101,7 @@ class TranslatorAgent(BaseAgent):
                 "Use the following article as a style and tone reference. Match its voice, structure, and clarity:\n\n"
                 "Now translate and rewrite the following article:\n\n"
                 f"{article['content']}"
-            )
+            )   
 
                         
             content_payload = {"contents": [{"parts": [{"text": content_prompt}]}]}
