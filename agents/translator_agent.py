@@ -77,7 +77,7 @@ class TranslatorAgent(BaseAgent):
                 "Translate and resturcture the whole following tutorial article from English to Bahasa Malaysia. "
                 "Preserve the original HTML structure including all tags such as <h1>, <h2>, <p>, <ul>, <ol>, and <img>. "
                 "Do NOT translate any content inside <img> tags. "
-                "Retain all crypto and trading-related terms in English, and enclose them in double quotes (e.g., \"futures\", \"wallet\", \"liquidation\"). "
+                "Retain all crypto and trading-related terms in English, and enclose them in double quotes."
                 "Restructure the content output SEO friendly by using clear headings, proper paragraph breaks, and concise, non-repetitive language."
                 "Do not include any explanation or extra notes—only return the translated and formatted HTML content. "
                 "At the end of the article, add a short summary in Bahasa Malaysia under a <h2> heading titled 'Kesimpulan', highlighting the key points in 2–4 bullet points.\n\n"
