@@ -14,7 +14,7 @@ class ScraperAgent(Agent):
         options_main.add_argument('--disable-dev-shm-usage')
         driver = uc.Chrome(options=options_main)
 
-        driver.get(f"{BASE_URL}/learn/trading-guide?page=8")
+        driver.get(f"{BASE_URL}/learn/trading-guide?page=9")
         soup = BeautifulSoup(driver.page_source, "html.parser")
         driver.quit()
 
