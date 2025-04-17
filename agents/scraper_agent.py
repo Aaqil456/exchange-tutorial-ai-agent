@@ -14,12 +14,12 @@ class ScraperAgent(Agent):
         options_main.add_argument('--disable-dev-shm-usage')
         driver = uc.Chrome(options=options_main)
 
-        driver.get(f"{BASE_URL}/learn/trading-guide")
+        driver.get(f"{BASE_URL}/learn/trading-guide?page=2")
         soup = BeautifulSoup(driver.page_source, "html.parser")
         driver.quit()
 
         links = []
-        for a in soup.select('a[href^="/learn/trading-guide?page=2"]'):
+        for a in soup.select('a[href^="/learn"]'):
             full_link = BASE_URL + a.get('href')
             if full_link not in links and "trading-guide" not in full_link:
                 links.append(full_link)
